@@ -37,6 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Custom apps
+    'firstsite',  # Ensure this matches the name of the app folder
 ]
 
 MIDDLEWARE = [
