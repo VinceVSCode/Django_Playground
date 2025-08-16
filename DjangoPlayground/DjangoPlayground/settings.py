@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
     # Custom apps
     'firstsite',  # Ensure this matches the name of the app folder
+    'rest_framework'
 ]
 
 MIDDLEWARE = [
