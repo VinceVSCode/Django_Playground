@@ -1,5 +1,6 @@
 from django.shortcuts import render
-
+from .models import Note
+from django.contrib.auth.decorators import login_required
 # Create your views here.
 
 def hello_world(request):
@@ -15,3 +16,8 @@ def hello_world(request):
         'message': message
     }
     return render(request, 'firstsite/hello.html', context)
+
+@login_required
+def user_notes(request):
+    notes = Note.objects.filter(owner=request.user).order_by('-created_at')
+    return render(request, 'firstsite/user_notes.html', {'notes': notes})
