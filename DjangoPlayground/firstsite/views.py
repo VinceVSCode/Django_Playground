@@ -44,9 +44,41 @@ def create_note(request):
     return render(request, 'firstsite/create_note.html', {'form': form})
 
 # API endpoint to create a new note
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def api_user_notes(request):
-    notes = Note.objects.filter(owner=request.user).order_by('-created_at')
-    serializer = NoteSerializer(notes, many=True)
+    if request.method == 'GET':
+        """
+        Retrieve all notes for the authenticated user.
+        """
+        notes = Note.objects.filter(owner = request.user).order_by('-created_at')
+        serializer = NoteSerializer(notes, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        """
+        Create a new note for the authenticated user.
+        """
+        serializer = NoteSerializer(data=request.data)
+        if serializer.is_valid():
+
+            note = serializer.save(owner=request.user)
+            # note = serializer.save(commit=False)
+            # note.owner = request.user
+            # note.save()
+            return Response(NoteSerializer(note).data, status=201)
+        return Response(serializer.errors, status=400)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_note_detail(request, pk):
+    """
+    Retrieve a specific note for the authenticated user.
+    """
+    try:
+        note = Note.objects.get(pk=pk, owner=request.user)
+    except Note.DoesNotExist:
+        return Response({'error': 'Note not found'}, status=404)
+
+    serializer = NoteSerializer(note)
     return Response(serializer.data)
