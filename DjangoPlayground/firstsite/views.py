@@ -45,7 +45,7 @@ def create_note(request):
 
 # API endpoint to create a new note
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
+#@permission_classes([IsAuthenticated])
 def api_user_notes(request):
     if request.method == 'GET':
         """
