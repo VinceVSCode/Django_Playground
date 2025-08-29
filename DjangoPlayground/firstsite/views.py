@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Note
+from .models import Note, Tag
 from .forms import NoteForm
 from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view, permission_classes
@@ -61,12 +61,16 @@ def api_user_notes(request):
         """
         serializer = NoteSerializer(data=request.data)
         if serializer.is_valid():
-
+            # Save the note with the authenticated user as the owner
             note = serializer.save(owner=request.user)
-            # note = serializer.save(commit=False)
-            # note.owner = request.user
-            # note.save()
+            #Attach tags (if any)
+            tags = request.data.get('tags', [])
+            if tags:
+                note.tags.set(Tag.objects.filter(id__in=tags, owner=request.user))
+
+            # Return the created note data
             return Response(NoteSerializer(note).data, status=201)
+        # If the serializer is not valid, return the errors
         return Response(serializer.errors, status=400)
 
 # API endpoint to retrieve a specific note
@@ -94,6 +98,10 @@ def api_note_detail(request, pk):
         serializer = NoteSerializer(note, data=request.data)
         if serializer.is_valid():
             serializer.save()
+            # Optional: update tags
+            tags = request.data.get('tags', [])
+            note.tags.set(Tag.objects.filter(id__in=tags, owner=request.user))
+            
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
 
