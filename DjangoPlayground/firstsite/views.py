@@ -112,12 +112,26 @@ def api_note_detail(request, pk):
     
 # Tag API endpoint
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def api_list_tags(request):
     """
     List all tags for the authenticated user.
     """
-    tags = Tag.objects.filter(owner=request.user).order_by('name') # Order alphabetically, so as to be better in the eyes.
-    serializer = TagSerializer(tags, many=True)  # Serialize the list of tags
-    return Response(serializer.data)
+    if request.method == 'GET':
+
+        tags = Tag.objects.filter(owner=request.user).order_by('name') # Order alphabetically, so as to be better in the eyes.
+        serializer = TagSerializer(tags, many=True)  # Serialize the list of tags
+        return Response(serializer.data)
+    
+    elif request.method == 'POST':
+        # Create a new tag for the authenticated user.
+        serializer = TagSerializer(data=request.data)
+
+        # Validate the serializer
+        if serializer.is_valid():
+            tag = serializer.save(owner=request.user)
+
+            return Response(TagSerializer(tag).data, status=201) # Return the created tag data and proper status
+
+        return Response(serializer.errors, status=400) # Return the errors if the serializer is not valid

@@ -18,3 +18,4 @@ class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = ['id', 'name']
+        read_only_fields = ['id'] # ID is read-only, so we can assign owner manually via API.
