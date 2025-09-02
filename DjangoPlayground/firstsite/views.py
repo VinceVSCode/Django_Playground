@@ -49,9 +49,23 @@ def create_note(request):
 def api_user_notes(request):
     if request.method == 'GET':
         """
-        Retrieve all notes for the authenticated user.
+        Retrieve all notes for the authenticated user and support tag filtering.
         """
-        notes = Note.objects.filter(owner = request.user).order_by('-created_at')
+        # Get the tag ID from the query parameters
+        tag_id = request.query_params.get('tag')
+
+        # Filter notes by tag if tag_id is provided
+        notes = Note.objects.filter(owner=request.user)
+
+
+        if tag_id:
+            # Filter notes by tag if tag_id is provided
+            try:
+                tag = Tag.objects.get(id=tag_id, owner=request.user)
+                notes = notes.filter(tags=tag)
+            except Tag.DoesNotExist:
+                notes = Note.objects.none()
+
         serializer = NoteSerializer(notes, many=True)
         return Response(serializer.data)
 
