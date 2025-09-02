@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Note, Tag
 
+# Serializer for the Note model
 class NoteSerializer(serializers.ModelSerializer):
     tags = serializers.PrimaryKeyRelatedField(
         many=True, # a note can have multiple tags
@@ -11,3 +12,9 @@ class NoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Note
         fields = ['id', 'title', 'content', 'created_at', 'updated_at', 'tags']
+
+# Serializer for the Tag model
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ['id', 'name']

@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .serializers import NoteSerializer
+from .serializers import NoteSerializer , TagSerializer
 # Create your views here.
 
 def hello_world(request):
@@ -45,7 +45,7 @@ def create_note(request):
 
 # API endpoint to create a new note
 @api_view(['GET', 'POST'])
-#@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def api_user_notes(request):
     if request.method == 'GET':
         """
@@ -109,3 +109,15 @@ def api_note_detail(request, pk):
         # Delete the note
         note.delete()
         return Response(status=204)
+    
+# Tag API endpoint
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_list_tags(request):
+    """
+    List all tags for the authenticated user.
+    """
+    tags = Tag.objects.filter(owner=request.user).order_by('name') # Order alphabetically, so as to be better in the eyes.
+    serializer = TagSerializer(tags, many=True)  # Serialize the list of tags
+    return Response(serializer.data)
