@@ -7,7 +7,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .serializers import NoteSerializer , TagSerializer
 from django.db.models import Q
+"""
+To generate tokens for users, you can use the following command in your terminal:
+python manage.py drf_create_token 'your_username'
+then use the generated token in your API requests as follows:
+Authorization: Token your_generated_token
 
+Have fun!
+"""
 # Create your views here.
 
 def hello_world(request):
@@ -64,6 +71,14 @@ def api_user_notes(request):
 
         # Filter notes by tag if tag_id is provided
         notes = Note.objects.filter(owner=request.user)
+
+        # pinned requests, we need to have 'notes' defined before we filter it.
+        pinned = request.query_params.get('pinned')
+
+        if pinned == '1':
+            notes = notes.filter(is_pinned=True)
+        elif pinned == '0':
+            notes = notes.filter(is_pinned=False)
 
 
         if tag_id:

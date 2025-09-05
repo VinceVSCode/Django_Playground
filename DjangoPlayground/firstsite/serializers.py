@@ -11,7 +11,7 @@ class NoteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Note
-        fields = ['id', 'title', 'content', 'created_at', 'updated_at', 'tags']
+        fields = ['id', 'title', 'content', 'created_at', 'updated_at', 'tags','is_pinned']
 
 # Serializer for the Tag model
 class TagSerializer(serializers.ModelSerializer):
