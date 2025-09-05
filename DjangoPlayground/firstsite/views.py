@@ -60,6 +60,7 @@ def api_user_notes(request):
         """
         Retrieve all notes for the authenticated user and support tag filtering.
         """
+
         # Get the tag ID from the query parameters
         tag_id = request.query_params.get('tag')
 
@@ -79,6 +80,14 @@ def api_user_notes(request):
             notes = notes.filter(is_pinned=True)
         elif pinned == '0':
             notes = notes.filter(is_pinned=False)
+            
+        # achieved via query parameters.
+        archived = request.query_params.get('archived')
+
+        if archived == '1':
+            notes = notes.filter(is_archived=True)
+        elif archived == '0':
+            notes = notes.filter(is_archived=False)
 
 
         if tag_id:
