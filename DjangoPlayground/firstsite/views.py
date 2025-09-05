@@ -6,6 +6,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .serializers import NoteSerializer , TagSerializer
+from django.db.models import Q
+
 # Create your views here.
 
 def hello_world(request):
@@ -54,6 +56,12 @@ def api_user_notes(request):
         # Get the tag ID from the query parameters
         tag_id = request.query_params.get('tag')
 
+        # Support search with no taggs.
+        untagged = request.query_params.get('untagged') == '1'
+        
+        # Query search 
+        search_query = request.query_params.get('search')
+
         # Filter notes by tag if tag_id is provided
         notes = Note.objects.filter(owner=request.user)
 
@@ -65,7 +73,16 @@ def api_user_notes(request):
                 notes = notes.filter(tags=tag)
             except Tag.DoesNotExist:
                 notes = Note.objects.none()
+        elif untagged:
+            notes = notes.filter(tags__isnull=True)
 
+        if search_query:
+            notes = notes.filter(
+                Q(title__icontains=search_query) | Q(content__icontains=search_query)
+                )
+
+        # Lastly, order notes by creation date (newest first)
+        notes = notes.order_by('-created_at')
         serializer = NoteSerializer(notes, many=True)
         return Response(serializer.data)
 
