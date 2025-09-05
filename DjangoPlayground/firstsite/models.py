@@ -9,8 +9,10 @@ class Note(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    tags = models.ManyToManyField('Tag', blank=True)
     is_pinned = models.BooleanField(default=False)
-    
+    is_archived = models.BooleanField(default=False)
+
     # tags
     tags = models.ManyToManyField('Tag', blank=True)
     
