@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Note, Tag
+from .models import Note, NoteVersion, Tag
 from .forms import NoteForm
 from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view, permission_classes
@@ -152,6 +152,14 @@ def api_note_detail(request, pk):
         #  Update the note details
         serializer = NoteSerializer(note, data=request.data)
         if serializer.is_valid():
+            # First save the current version before updating
+            NoteVersion.objects.create(
+                note=note,
+                title=note.title,
+                content=note.content,
+                updated_by= request.user
+
+            )
             serializer.save()
             # Optional: update tags
             tags = request.data.get('tags', [])
