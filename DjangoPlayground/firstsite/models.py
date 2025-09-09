@@ -27,3 +27,14 @@ class Tag(models.Model):
 
     def __str__(self):
         return self.name
+    
+# Note Version model
+class NoteVersion(models.Model):
+    note = models.ForeignKey(Note, on_delete=models.CASCADE, related_name='versions')
+    title = models.CharField(max_length=100)
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Version of {self.note.title} at {self.timestamp}"
