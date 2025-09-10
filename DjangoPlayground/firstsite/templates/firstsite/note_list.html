@@ -12,7 +12,7 @@
         <ul>
         {% for note in notes %}
             <li>
-                <strong>{{ note.title }}</strong><br>
+                <strong><a href="{% url 'note_detail' note.pk %}">{{ note.title }}</a></strong><br>
                 {{ note.content|truncatechars:100 }}<br>
                 {% if note.is_pinned %}<em>Pinned</em>{% endif %}
                 {% if note.is_archived %}<em> (Archived)</em>{% endif %}
