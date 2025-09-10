@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import Note, NoteVersion, Tag
 from .forms import NoteForm
 from django.contrib.auth.decorators import login_required
@@ -42,6 +42,12 @@ def user_notes(request):
 def note_list_view(request):
     notes = Note.objects.filter(owner=request.user).order_by('-created_at')
     return render(request, 'firstsite/note_list.html', {'notes': notes})
+
+@login_required
+def note_detail_view(request, pk):
+    note = get_object_or_404(Note, pk=pk, owner=request.user)
+    versions = NoteVersion.objects.filter(note=note).order_by('-updated_at')
+    return render(request, 'firstsite/note_detail.html', {'note': note, 'versions': versions})
 
 
 # API endpoint to create a new note
