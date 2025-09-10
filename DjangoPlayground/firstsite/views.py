@@ -37,6 +37,13 @@ def user_notes(request):
     notes = Note.objects.filter(owner=request.user).order_by('-created_at')
     return render(request, 'firstsite/user_notes.html', {'notes': notes})
 
+# View to list notes for the logged-in user. Render a template with the notes.
+@login_required
+def note_list_view(request):
+    notes = Note.objects.filter(owner=request.user).order_by('-created_at')
+    return render(request, 'firstsite/note_list.html', {'notes': notes})
+
+
 # API endpoint to create a new note
 @login_required
 def create_note(request):

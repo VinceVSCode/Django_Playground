@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Your Notes</title>
+</head>
+<body>
+    <h1>Your Notes</h1>
+
+    {% if notes %}
+        <ul>
+        {% for note in notes %}
+            <li>
+                <strong>{{ note.title }}</strong><br>
+                {{ note.content|truncatechars:100 }}<br>
+                {% if note.is_pinned %}<em>Pinned</em>{% endif %}
+                {% if note.is_archived %}<em> (Archived)</em>{% endif %}
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No notes yet.</p>
+    {% endif %}
+</body>
+</html>
