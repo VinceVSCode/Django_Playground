@@ -1,0 +1,53 @@
+/* Basic, readable defaults */
+:root {
+  --text: #222;
+  --muted: #666;
+  --bg: #fafafa;
+  --link: #0a5fff;
+  --border: #e6e6e6;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.5;
+}
+
+nav {
+  padding: .75rem 1rem;
+  background: white;
+  border-bottom: 1px solid var(--border);
+}
+nav a { margin-right: .75rem; color: var(--link); text-decoration: none; }
+nav a:hover { text-decoration: underline; }
+
+.container {
+  max-width: 760px;
+  margin: 1.25rem auto;
+  padding: 0 1rem;
+}
+
+h1, h2, h3 { margin: .5rem 0 1rem; }
+
+ul { list-style: none; padding: 0; }
+li.card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: .75rem;
+  margin-bottom: .75rem;
+}
+
+small, .muted { color: var(--muted); }
+button, .button {
+  display: inline-block;
+  padding: .45rem .75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: white;
+  cursor: pointer;
+}
+button:hover, .button:hover { background: #f3f6ff; }

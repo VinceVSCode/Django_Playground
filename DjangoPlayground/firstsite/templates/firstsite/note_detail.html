@@ -16,5 +16,10 @@
 {% if note.is_archived %}<p><em>Archived</em></p>{% endif %}
 
 <p><small>Updated: {{ note.updated_at|date:"Y-m-d H:i" }}</small></p>
-<a href="{% url 'note_lists' %}">← Back to list</a>
+<p>
+  <a href="{% url 'note_edit' note.pk %}">Edit</a> ·
+  <a href="{% url 'note_delete' note.pk %}">Delete</a> ·
+  <a href="{% url 'note_lists' %}">Back to list</a>
+</p>
+
 {% endblock %}

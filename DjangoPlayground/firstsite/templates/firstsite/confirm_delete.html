@@ -1,0 +1,12 @@
+{% extends "firstsite/base.html" %}
+{% block title %}Delete: {{ note.title }}{% endblock %}
+{% block content %}
+<h1>Delete Note</h1>
+<p>Are you sure you want to delete “{{ note.title }}”?</p>
+
+<form method="post">
+  {% csrf_token %}
+  <button type="submit" style="margin-right: .5rem;">Yes, delete</button>
+  <a href="{% url 'note_detail' note.pk %}">Cancel</a>
+</form>
+{% endblock %}
