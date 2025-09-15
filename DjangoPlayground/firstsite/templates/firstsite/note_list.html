@@ -50,7 +50,7 @@
         </strong>
         {% if note.is_pinned %}<em> (Pinned)</em>{% endif %}
         {% if note.is_archived %}<em> (Archived)</em>{% endif %}
-        <div>{{ note.content|truncatechars:120 }}</div>
+        <div class="muted">{{ note.content|truncatechars:120 }}</div>
         {% if note.tags.exists %}
           <div>
             <small>Tags:
