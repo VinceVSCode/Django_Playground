@@ -1,26 +1,69 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Your Notes</title>
-</head>
-<body>
-    <h1>Your Notes</h1>
+{% extends "firstsite/base.html" %}
+{% block title %}Your Notes{% endblock %}
 
-    {% if notes %}
-        <ul>
-        {% for note in notes %}
-            <li>
-                <strong><a href="{% url 'note_detail' note.pk %}">{{ note.title }}</a></strong><br>
-                {{ note.content|truncatechars:100 }}<br>
-                {% if note.is_pinned %}<em>Pinned</em>{% endif %}
-                {% if note.is_archived %}<em> (Archived)</em>{% endif %}
-            </li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>No notes yet.</p>
-    {% endif %}
-</body>
-</html>
+{% block content %}
+<h1>Your Notes</h1>
+
+<form method="get" style="margin-bottom:1rem">
+  <input type="text" name="search" placeholder="Search…" value="{{ values.search|default:'' }}" />
+
+  <select name="tag">
+    <option value="">— All tags —</option>
+    {% for t in tags %}
+      <option value="{{ t.id }}" {% if values.tag == t.id|stringformat:"s" %}selected{% endif %}>{{ t.name }}</option>
+    {% endfor %}
+  </select>
+
+  <label>
+    <input type="checkbox" name="untagged" value="1" {% if values.untagged == '1' %}checked{% endif %}/>
+    Untagged only
+  </label>
+
+  <label>
+    Pinned:
+    <select name="pinned">
+      <option value="">All</option>
+      <option value="1" {% if values.pinned == '1' %}selected{% endif %}>Yes</option>
+      <option value="0" {% if values.pinned == '0' %}selected{% endif %}>No</option>
+    </select>
+  </label>
+
+  <label>
+    Archived:
+    <select name="archived">
+      <option value="">All</option>
+      <option value="0" {% if values.archived == '0' %}selected{% endif %}>No</option>
+      <option value="1" {% if values.archived == '1' %}selected{% endif %}>Yes</option>
+    </select>
+  </label>
+
+  <button type="submit">Apply</button>
+  <a href="{% url 'note_lists' %}">Reset</a>
+</form>
+
+{% if notes %}
+  <ul>
+    {% for note in notes %}
+      <li style="margin-bottom:1rem">
+        <strong>
+          <a href="{% url 'note_detail' note.pk %}">{{ note.title }}</a>
+        </strong>
+        {% if note.is_pinned %}<em> (Pinned)</em>{% endif %}
+        {% if note.is_archived %}<em> (Archived)</em>{% endif %}
+        <div>{{ note.content|truncatechars:120 }}</div>
+        {% if note.tags.exists %}
+          <div>
+            <small>Tags:
+              {% for tag in note.tags.all %}
+                {{ tag.name }}{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+            </small>
+          </div>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No notes match your filters.</p>
+{% endif %}
+{% endblock %}

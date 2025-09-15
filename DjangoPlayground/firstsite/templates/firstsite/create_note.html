@@ -1,19 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-
-</html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Create a Note</title>
-</head>
-<body>
-    <h1>Create a New Note</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Save</button>
-    </form>
-    <a href="{% url 'user_notes' %}">Back to notes</a>
-</body>
-</html>
+{%extends "firstsite/base.html"%}
+{%block title%}Create Note{%endblock%}
+{%block content%}
+  <h2>Create a New Note</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save</button>
+    <a href = "{% url 'note_lists' %}">Cancel</a>
+  </form>
+{%endblock%}
