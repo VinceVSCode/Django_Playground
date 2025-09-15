@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import api_note_detail, api_user_notes, create_note, hello_world, user_notes ,api_list_tags, note_list_view, note_detail_view
+from .views import api_note_detail, api_user_notes, create_note, hello_world, user_notes ,api_list_tags, note_list_view, note_detail_view, note_update_view, note_delete_view
 
 urlpatterns = [
     path('hello/', hello_world, name='hello_world'), # Maps the root URL to the hello_world view. Basically /firstsite/ will call the hello_world function.
@@ -11,7 +11,7 @@ urlpatterns = [
     path('notes/<int:pk>/', note_detail_view, name='note_detail'), # Maps the URL /firstsite/notes/<int:pk>/ to the note_detail_view.
     path('notes/<int:pk>/edit/', note_update_view, name='note_edit'),
     path('notes/<int:pk>/delete/', note_delete_view, name='note_delete'),
-    
+
     # API note endpoints
     path('api/notes/', api_user_notes, name='api_user_notes'), # API endpoint to get user notes
     #path('api/notes/create/', api_user_notes, name='api_create_note'), # API endpoint to create a new note
