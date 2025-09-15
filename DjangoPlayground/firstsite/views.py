@@ -40,31 +40,96 @@ def user_notes(request):
 # View to list notes for the logged-in user. Render a template with the notes.
 @login_required
 def note_list_view(request):
-    notes = Note.objects.filter(owner=request.user).order_by('-created_at')
-    return render(request, 'firstsite/note_list.html', {'notes': notes})
+    # Query params
+    tag_id = request.GET.get('tag')                 # e.g. ?tag=3
+    untagged = request.GET.get('untagged') == '1'   # e.g. ?untagged=1
+    search = request.GET.get('search')              # e.g. ?search=foo
+    pinned = request.GET.get('pinned')              # '1', '0', or None
+    archived = request.GET.get('archived')          # '1', '0', or None
+
+    # Base queryset: only current user's notes
+    notes = Note.objects.filter(owner=request.user)
+
+    # Tag filtering (exclusive with untagged)
+    if tag_id:
+        notes = notes.filter(tags__id=tag_id,tags_owner=request.user)
+    elif untagged:
+        notes = notes.filter(tags__isnull=True)
+
+    # Pinned filtering
+    if pinned == '1':
+        notes = notes.filter(is_pinned=True)
+    elif pinned == '0':
+        notes = notes.filter(is_pinned=False)
+    
+    # Archived filtering
+    if archived == '1':
+        notes = notes.filter(is_archived=True)
+    elif archived == '0':
+        notes = notes.filter(is_archived=False)
+    
+    # Search filtering
+    if search:
+        notes = notes.filter(
+            Q(title__icontains=search) | Q(content__icontains=search)
+        )
+
+    # Order the tag dropdown alphabetically
+    tags = Tag.objects.filter(owner=request.user).order_by('name')
+
+    ctx= {
+        'notes': notes,
+        'tags': tags,
+        'values': request.GET,  # to retain filter values in the template
+    }
+    return render(request, 'firstsite/note_list.html', ctx)
 
 @login_required
 def note_detail_view(request, pk):
     note = get_object_or_404(Note, pk=pk, owner=request.user)
-    versions = NoteVersion.objects.filter(note=note).order_by('-updated_at')
-    return render(request, 'firstsite/note_detail.html', {'note': note, 'versions': versions})
+    return render(request, 'firstsite/note_detail.html', {'note': note})
 
 
 # API endpoint to create a new note
 @login_required
 def create_note(request):
+    # check if it is a post.
     if request.method == "POST":
-        form = NoteForm(request.POST)
+        form = NoteForm(request.POST, user=request.user)  # Pass the user to the form
         if form.is_valid():
             note = form.save(commit=False)
             note.owner = request.user
             note.save()
-            return redirect('user_notes') # name defined in urls.py
+            form.save_m2m()  # save selected tags
+            # Redirect to the note list view after creation
+            return redirect('note_lists')
     else:
-        form = NoteForm()
+        form = NoteForm(user=request.user)
+    return render(request, "firstsite/create_note.html", {"form": form})
 
-    return render(request, 'firstsite/create_note.html', {'form': form})
+# API endpoint to edit note
+@login_required
+def edit_note (request, pk):
+    note = get_object_or_404(Note,pk=pk, owner=request.user)
+    if request.method == "POST":
+        form = NoteForm(request.POST, instance=note)
+        form.fields["tags"].queryset = Tag.objects.filter(owner=request.user)
 
+        if form.is_valid():
+            # Snapshot current state before updating (versioning)
+            NoteVersion.objects.create(
+                note=note,
+                title=note.title,
+                content=note.content,
+                updated_by=request.user,
+            )
+            form.save()  # saves fields + m2m
+            return redirect("note_detail", pk=note.pk)
+    else:
+        form = NoteForm(instance=note)
+        form.fields["tags"].queryset = Tag.objects.filter(owner=request.user)
+
+    return render(request, "firstsite/edit_note.html", {"form": form, "note": note})
 # API endpoint to create a new note
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
