@@ -130,6 +130,44 @@ def edit_note (request, pk):
         form.fields["tags"].queryset = Tag.objects.filter(owner=request.user)
 
     return render(request, "firstsite/edit_note.html", {"form": form, "note": note})
+# API endpoint to update note
+@login_required
+def note_update_view(request, pk):
+    """
+    Edit an existing note owned by the current user.
+    We use NoteForm and keep the tag choices limited to the user's tags. (for now)
+    """
+
+    note = get_object_or_404(Note, pk=pk, owner=request.user)
+    if request.method == "POST":
+        form = NoteForm(request.POST, instance=note, user=request.user)
+        if form.is_valid():
+            # Snapshot current state before updating (versioning)
+            NoteVersion.objects.create(
+                note=note,
+                title=note.title,
+                content=note.content,
+                updated_by=request.user,
+            )
+            form.save()  # saves fields + m2m
+            return redirect("note_detail", pk=note.pk)
+    else:
+        form = NoteForm(instance=note, user=request.user)
+    return render(request, "firstsite/edit_note.html", {"form": form, "note": note})
+
+# API endpoint to delete note
+@login_required
+def note_delete_view(request, pk):
+    """
+    Confirm + delete flow with CSRF protection.
+    GET -> show confirmation, POST -> delete then redirect to list.
+    """
+    note = get_object_or_404(Note, pk=pk, owner=request.user)
+    if request.method == "POST":
+        note.delete()
+        return redirect("note_lists")
+    return render(request, "firstsite/confirm_delete.html", {"note": note})
+
 # API endpoint to create a new note
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])

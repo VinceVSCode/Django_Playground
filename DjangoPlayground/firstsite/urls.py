@@ -9,7 +9,9 @@ urlpatterns = [
     path('notes/create/', create_note, name='create_note'), # Maps the URL /firstsite/notes/create/ to the create_note view.
     path('notes/list/', note_list_view, name='note_lists'), # Maps the URL /firstsite/notes/list/ to the note_lists_view.
     path('notes/<int:pk>/', note_detail_view, name='note_detail'), # Maps the URL /firstsite/notes/<int:pk>/ to the note_detail_view.
-
+    path('notes/<int:pk>/edit/', note_update_view, name='note_edit'),
+    path('notes/<int:pk>/delete/', note_delete_view, name='note_delete'),
+    
     # API note endpoints
     path('api/notes/', api_user_notes, name='api_user_notes'), # API endpoint to get user notes
     #path('api/notes/create/', api_user_notes, name='api_create_note'), # API endpoint to create a new note

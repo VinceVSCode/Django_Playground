@@ -4,8 +4,8 @@ from .models import Note, Tag
 class NoteForm(forms.ModelForm):
     tags = forms.ModelMultipleChoiceField(
         queryset=Tag.objects.none(),  # Initial empty queryset
-        required=False,
-        widget=forms.CheckboxSelectMultiple
+        widget=forms.CheckboxSelectMultiple,
+        required=False  # Tags are optional
     )
     class Meta:
         model = Note
