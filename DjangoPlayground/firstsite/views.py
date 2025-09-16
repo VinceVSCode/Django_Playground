@@ -78,16 +78,15 @@ def note_lists_view(request):
         )
 
     # Order notes by creation date (newest first)
-    notes = notes.order_by('-is_pinned', '-updated_at')
+    notes = notes.order_by('-is_pinned', '-updated_at').distinct()
 
-    # Paginate the notes shown, 10 per page.
-    paginator = Paginator(notes, 10)
+    # Paginate the notes shown, 8 per page.
+    paginator = Paginator(notes, 8)
     page_obj = paginator.get_page(request.GET.get('page'))
 
     #Keep filters in pagination links
     params = request.GET.copy()
-    if 'page' in params:
-        del params['page']
+    params.pop('page', None)  # remove existing page parameter
     querystring = params.urlencode() # for example tag=3&search=foo
 
 
