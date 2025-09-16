@@ -7,6 +7,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .serializers import NoteSerializer , TagSerializer
 from django.db.models import Q
+from django.contrib import messages
+from django.core.paginator import Paginator
+
 """
 To generate tokens for users, you can use the following command in your terminal:
 python manage.py drf_create_token 'your_username'
@@ -39,7 +42,7 @@ def user_notes(request):
 
 # View to list notes for the logged-in user. Render a template with the notes.
 @login_required
-def note_list_view(request):
+def note_lists_view(request):
     # Query params
     tag_id = request.GET.get('tag')                 # e.g. ?tag=3
     untagged = request.GET.get('untagged') == '1'   # e.g. ?untagged=1
@@ -74,13 +77,31 @@ def note_list_view(request):
             Q(title__icontains=search) | Q(content__icontains=search)
         )
 
+    # Order notes by creation date (newest first)
+    notes = notes.order_by('-is_pinned', '-updated_at')
+
+    # Paginate the notes shown, 10 per page.
+    paginator = Paginator(notes, 10)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
+    #Keep filters in pagination links
+    params = request.GET.copy()
+    if 'page' in params:
+        del params['page']
+    querystring = params.urlencode() # for example tag=3&search=foo
+
+
+
+
     # Order the tag dropdown alphabetically
     tags = Tag.objects.filter(owner=request.user).order_by('name')
 
     ctx= {
-        'notes': notes,
         'tags': tags,
-        'values': request.GET,  # to retain filter values in the template
+        'values': request.GET,
+        'page_obj': page_obj,
+        'querystring': querystring,
+        'notes':page_obj.object_list,  # the notes for the current page
     }
     return render(request, 'firstsite/note_list.html', ctx)
 
@@ -100,6 +121,8 @@ def create_note(request):
             note = form.save(commit=False)
             note.owner = request.user
             note.save()
+            # sent a success message
+            messages.success(request, "Note created successfully!")
             form.save_m2m()  # save selected tags
             # Redirect to the note list view after creation
             return redirect('note_lists')
@@ -150,6 +173,7 @@ def note_update_view(request, pk):
                 updated_by=request.user,
             )
             form.save()  # saves fields + m2m
+            messages.success(request, "Note updated successfully!")
             return redirect("note_detail", pk=note.pk)
     else:
         form = NoteForm(instance=note, user=request.user)
@@ -165,6 +189,7 @@ def note_delete_view(request, pk):
     note = get_object_or_404(Note, pk=pk, owner=request.user)
     if request.method == "POST":
         note.delete()
+        messages.success(request, "Note deleted successfully.")
         return redirect("note_lists")
     return render(request, "firstsite/confirm_delete.html", {"note": note})
 
