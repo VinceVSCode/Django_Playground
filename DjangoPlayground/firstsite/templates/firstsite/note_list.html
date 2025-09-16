@@ -41,10 +41,10 @@
   <a href="{% url 'note_lists' %}">Reset</a>
 </form>
 
-{% if notes %}
+{% if page_obj.object_list %}
   <ul>
-    {% for note in notes %}
-      <li style="margin-bottom:1rem">
+    {% for note in page_obj.object_list %}
+      <li class="card">
         <strong>
           <a href="{% url 'note_detail' note.pk %}">{{ note.title }}</a>
         </strong>
@@ -63,7 +63,40 @@
       </li>
     {% endfor %}
   </ul>
+
+  {# --- numbered pager goes here (next step) --- #}
+{% if page_obj.paginator.num_pages > 1 %}
+  <nav class="pagination">
+    {# First / Prev #}
+    {% if page_obj.has_previous %}
+      <a class="button" href="?{% if querystring %}{{ querystring }}&{% endif %}page=1">« First</a>
+      <a class="button" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}">‹ Prev</a>
+    {% endif %}
+
+    {# Windowed page numbers with ellipses (no parentheses in conditions) #}
+    {% for num in page_obj.paginator.page_range %}
+      {% if num == 1 or num == page_obj.paginator.num_pages or num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+        {% if num == page_obj.number %}
+          <span class="button" style="font-weight:bold;">{{ num }}</span>
+        {% else %}
+          <a class="button" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}">{{ num }}</a>
+        {% endif %}
+      {% elif num == page_obj.number|add:'-3' or num == page_obj.number|add:'3' %}
+        <span class="muted">…</span>
+      {% endif %}
+    {% endfor %}
+
+    {# Next / Last #}
+    {% if page_obj.has_next %}
+      <a class="button" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}">Next ›</a>
+      <a class="button" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.paginator.num_pages }}">Last »</a>
+    {% endif %}
+  </nav>
+{% endif %}
+
+
 {% else %}
   <p>No notes match your filters.</p>
 {% endif %}
+
 {% endblock %}
