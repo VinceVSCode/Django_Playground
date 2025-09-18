@@ -134,3 +134,12 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
 }
+
+# Send unauthenticated users to the login view
+LOGIN_URL = 'login'  # name from django.contrib.auth.urls
+
+# Where to land after login
+LOGIN_REDIRECT_URL = 'note_lists'  # your list view name
+
+# Where to land after logout
+LOGOUT_REDIRECT_URL = 'login'

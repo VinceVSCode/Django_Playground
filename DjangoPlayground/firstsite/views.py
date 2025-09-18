@@ -34,6 +34,12 @@ def hello_world(request):
     }
     return render(request, 'firstsite/hello.html', context)
 
+# Redirect to notes list if logged in, else to login page.
+def home(request):
+    if request.user.is_authenticated:
+        return redirect('note_lists')  # to your notes list
+    return redirect('login')           # to /accounts/login/
+
 # API endpoint to get user notes
 @login_required
 def user_notes(request):
