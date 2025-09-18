@@ -8,10 +8,21 @@
 </head>
 <body>
   <nav>
-    <a href="{% url 'note_lists' %}">Notes</a> |
-    <a href="{% url 'create_note' %}">New note</a> |
-    <a href="/accounts/logout/">Logout</a>
+    <a href="{% url 'note_lists' %}">Notes</a>
+    <a href="{% url 'create_note' %}">New note</a>
+
+    <span style="float:right">
+      {% if request.user.is_authenticated %}
+        <form action="{% url 'logout' %}" method="post" style="display:inline">
+          {% csrf_token %}
+          <button class="button" type="submit">Logout</button>
+        </form>
+      {% else %}
+        <a href="{% url 'login' %}">Login</a>
+      {% endif %}
+    </span>
   </nav>
+
   <!-- Flash messages -->
   {% if messages %}
     <ul class="messages">
