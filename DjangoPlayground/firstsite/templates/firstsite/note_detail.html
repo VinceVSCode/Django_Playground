@@ -9,7 +9,7 @@
 {% if note.tags.exists %}
   <p><strong>Tags:</strong>
     {% for tag in note.tags.all %}
-      {{ tag.name }}{% if not forloop.last %}, {% endif %}
+      <span class="tagpill">{{ tag.name }}</span>
     {% endfor %}
   </p>
 {% endif %}

@@ -55,7 +55,7 @@
           <div>
             <small>Tags:
               {% for tag in note.tags.all %}
-                {{ tag.name }}{% if not forloop.last %}, {% endif %}
+                <span class="tagpill">{{ tag.name }}</span>
               {% endfor %}
             </small>
           </div>

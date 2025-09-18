@@ -7,21 +7,21 @@
   <link rel="stylesheet" href="{% static 'firstsite/styles.css' %}" />
 </head>
 <body>
-  <nav>
-    <a href="{% url 'note_lists' %}">Notes</a>
-    <a href="{% url 'create_note' %}">New note</a>
-
-    <span style="float:right">
+  <header class="brandbar">
+    <div class="brand">DjangoPlayground</div>
+    <nav class="nav">
       {% if request.user.is_authenticated %}
-        <form action="{% url 'logout' %}" method="post" style="display:inline">
+        <a href="{% url 'note_lists' %}">Notes</a>
+        <a href="{% url 'create_note' %}">New note</a>
+        <form action="{% url 'logout' %}" method="post" class="inline">
           {% csrf_token %}
           <button class="button" type="submit">Logout</button>
         </form>
       {% else %}
         <a href="{% url 'login' %}">Login</a>
       {% endif %}
-    </span>
-  </nav>
+    </nav>
+  </header>
 
   <!-- Flash messages -->
   {% if messages %}
