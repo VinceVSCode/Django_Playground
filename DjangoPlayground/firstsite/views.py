@@ -3,6 +3,7 @@ from .models import Note, NoteVersion, Tag
 from .forms import NoteForm
 from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view, permission_classes
+from django.views.decorators.http import require_POST
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .serializers import NoteSerializer , TagSerializer
@@ -109,6 +110,26 @@ def note_lists_view(request):
         'notes':page_obj.object_list,  # the notes for the current page
     }
     return render(request, 'firstsite/note_list.html', ctx)
+
+# Toggle pin status of a note
+@login_required
+@require_POST
+def note_toggle_pin(request, pk):
+    note = get_object_or_404(Note, pk=pk, owner=request.user)
+    note.is_pinned = not note.is_pinned
+    note.save(update_fields=['is_pinned', 'updated_at'])
+    messages.success(request, "Note pinned." if note.is_pinned else "Note unpinned.")
+    return redirect(request.POST.get('next') or 'note_lists')
+
+# Toggle archive status of a note
+@login_required
+@require_POST
+def note_toggle_archive(request, pk):
+    note = get_object_or_404(Note, pk=pk, owner=request.user)
+    note.is_archived = not note.is_archived
+    note.save(update_fields=['is_archived', 'updated_at'])
+    messages.success(request, "Note archived." if note.is_archived else "Note restored.")
+    return redirect(request.POST.get('next') or 'note_lists')
 
 @login_required
 def note_detail_view(request, pk):
