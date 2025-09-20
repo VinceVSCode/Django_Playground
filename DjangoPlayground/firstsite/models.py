@@ -25,6 +25,9 @@ class Tag(models.Model):
     name = models.CharField(max_length=16)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
+    class Meta:
+        unique_together = ('owner', 'name')  # Ensure unique tag names per user
+
     def __str__(self):
         return self.name
     
