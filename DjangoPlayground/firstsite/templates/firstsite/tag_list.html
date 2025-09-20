@@ -1,0 +1,29 @@
+
+{% extends "firstsite/base.html" %}
+{% block title %}Tags{% endblock %}
+{% block content %}
+<h1>Tags</h1>
+<div class="card">
+  <form method="post" action="{% url 'tag_create' %}" class="inline">
+    {% csrf_token %}
+    <input type="text" name="name" placeholder="New tag name" required>
+    <button class="button" type="submit">Add</button>
+  </form>
+</div>
+
+{% if tags %}
+  <ul>
+  {% for tag in tags %}
+    <li class="card">
+      <span class="tagpill">{{ tag.name }}</span>
+      <div style="margin-top:.4rem">
+        <a class="button" href="{% url 'tag_edit' tag.pk %}">Rename</a>
+        <a class="button" href="{% url 'tag_delete' tag.pk %}">Delete</a>
+      </div>
+    </li>
+  {% endfor %}
+  </ul>
+{% else %}
+  <p>No tags yet.</p>
+{% endif %}
+{% endblock %}
