@@ -20,10 +20,10 @@ from firstsite.views import home
 from firstsite.views_auth import CustomLoginView
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', home, name='home'),
-    path('accounts/login/', CustomLoginView.as_view(), name='login'),
+    path('admin/', admin.site.urls), # Admin site
+    path('accounts/login/', CustomLoginView.as_view(), name='login'), # Custom login view
     path('accounts/', include('django.contrib.auth.urls')),  # For login/logout functionality
+    path('', home, name='home'),  # Home view
     path('', include('firstsite.urls')),
 
 ]
