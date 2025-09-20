@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Note, NoteVersion, Tag
-from .forms import NoteForm
+from .forms import NoteForm, TagForm
 from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view, permission_classes
 from django.views.decorators.http import require_POST
@@ -218,6 +218,51 @@ def note_delete_view(request, pk):
         messages.success(request, "Note deleted successfully.")
         return redirect("note_lists")
     return render(request, "firstsite/confirm_delete.html", {"note": note})
+
+# Tag views
+@login_required
+def tag_list_view(request):
+    tags = Tag.objects.filter(owner=request.user).order_by('name')
+    return render(request, 'firstsite/tag_list.html', {'tags': tags})
+
+# Create a new tag
+@login_required
+def tag_create_view(request):
+    if request.method == 'POST':
+        form = TagForm(request.POST, user=request.user)
+        if form.is_valid():
+            tag = form.save(commit=False)
+            tag.owner = request.user
+            tag.save()
+            messages.success(request, "Tag created.")
+            return redirect('tag_list')
+    else:
+        form = TagForm(user=request.user)
+    return render(request, 'firstsite/tag_form.html', {'form': form, 'title': 'New Tag'})
+
+# Update an existing tag
+@login_required
+def tag_update_view(request, pk):
+    tag = get_object_or_404(Tag, pk=pk, owner=request.user)
+    if request.method == 'POST':
+        form = TagForm(request.POST, instance=tag, user=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Tag renamed.")
+            return redirect('tag_list')
+    else:
+        form = TagForm(instance=tag, user=request.user)
+    return render(request, 'firstsite/tag_form.html', {'form': form, 'title': 'Rename Tag'})
+
+# Delete a tag
+@login_required
+def tag_delete_view(request, pk):
+    tag = get_object_or_404(Tag, pk=pk, owner=request.user)
+    if request.method == 'POST':
+        tag.delete()
+        messages.success(request, "Tag deleted.")
+        return redirect('tag_list')
+    return render(request, 'firstsite/tag_confirm_delete.html', {'tag': tag})
 
 # API endpoint to create a new note
 @api_view(['GET', 'POST'])

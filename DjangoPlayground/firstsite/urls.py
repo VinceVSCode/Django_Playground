@@ -1,5 +1,6 @@
 from django.urls import path
-from .views import api_note_detail, api_user_notes, create_note, hello_world, note_lists_view, user_notes ,api_list_tags, note_detail_view, note_update_view, note_delete_view,note_toggle_pin, note_toggle_archive
+from .views import api_note_detail, api_user_notes, create_note, hello_world, note_lists_view, tag_create_view, user_notes ,api_list_tags, note_detail_view, note_update_view, note_delete_view,note_toggle_pin, note_toggle_archive, tag_list_view, tag_update_view, tag_delete_view
+
 
 
 urlpatterns = [
@@ -14,6 +15,12 @@ urlpatterns = [
     path('notes/<int:pk>/delete/', note_delete_view, name='note_delete'),
     path('notes/<int:pk>/toggle-pin/', note_toggle_pin, name='note_toggle_pin'), # Toggle pin status of a note
     path('notes/<int:pk>/toggle-archive/', note_toggle_archive, name='note_toggle_archive'), # Toggle archive status of a note
+
+    # Tag views
+    path('tags/', tag_list_view, name='tag_list'),
+    path('tags/new/', tag_create_view, name='tag_create'),
+    path('tags/<int:pk>/edit/', tag_update_view, name='tag_edit'),
+    path('tags/<int:pk>/delete/', tag_delete_view, name='tag_delete'),
 
     # API note endpoints
     path('api/notes/', api_user_notes, name='api_user_notes'), # API endpoint to get user notes
