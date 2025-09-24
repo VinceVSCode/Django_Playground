@@ -10,6 +10,8 @@ from .serializers import NoteSerializer , TagSerializer
 from django.db.models import Q
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.utils.dateparse import parse_date
+
 
 """
 To generate tokens for users, you can use the following command in your terminal:
@@ -84,10 +86,27 @@ def note_lists_view(request):
             Q(title__icontains=search) | Q(content__icontains=search)
         )
 
+    # ---- Date range filtering ----
+    # Choose which field to filter: updated_at (default) or created_at
+    date_field = request.GET.get('date_field', 'updated')  # 'updated' | 'created'
+    field_map = {'updated': 'updated_at', 'created': 'created_at'}
+    target_field = field_map.get(date_field, 'updated_at')
+
+    from_str = request.GET.get('from')  # YYYY-MM-DD
+    to_str   = request.GET.get('to')    # YYYY-MM-DD
+
+    from_date = parse_date(from_str) if from_str else None
+    to_date   = parse_date(to_str) if to_str else None
+
+    if from_date:
+        notes = notes.filter(**{f'{target_field}__date__gte': from_date})
+    if to_date:
+        notes = notes.filter(**{f'{target_field}__date__lte': to_date})
+
+
     # ---- Sorting (defaults: updated description) ----
     sort = request.GET.get('sort', 'updated')   # 'updated' | 'created' | 'title'
     direction = request.GET.get('dir', 'desc')  # 'asc' | 'desc'
-
     field_map = {
         'updated': 'updated_at',
         'created': 'created_at',
@@ -95,7 +114,6 @@ def note_lists_view(request):
     }
     order_field = field_map.get(sort, 'updated_at')
     prefix = '' if direction == 'asc' else '-'
-
     # Keep pinned notes first; then apply chosen ordering
     notes = notes.order_by('-is_pinned', f'{prefix}{order_field}').distinct()
 

@@ -37,6 +37,24 @@
     </select>
   </label>
   <label>
+    Date field:
+    <select name="date_field">
+      <option value="updated" {% if values.date_field == 'updated' or not values.date_field %}selected{% endif %}>Updated</option>
+      <option value="created" {% if values.date_field == 'created' %}selected{% endif %}>Created</option>
+    </select>
+  </label>
+
+  <label>
+    From:
+    <input type="date" name="from" value="{{ values.from|default:'' }}">
+  </label>
+
+  <label>
+    To:
+    <input type="date" name="to" value="{{ values.to|default:'' }}">
+  </label>
+
+  <label>
     Sort by:
     <select name="sort">
       <option value="updated" {% if values.sort == 'updated' or not values.sort %}selected{% endif %}>Updated</option>
