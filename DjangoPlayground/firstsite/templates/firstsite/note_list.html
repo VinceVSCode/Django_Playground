@@ -36,6 +36,23 @@
       <option value="1" {% if values.archived == '1' %}selected{% endif %}>Yes</option>
     </select>
   </label>
+  <label>
+    Sort by:
+    <select name="sort">
+      <option value="updated" {% if values.sort == 'updated' or not values.sort %}selected{% endif %}>Updated</option>
+      <option value="created" {% if values.sort == 'created' %}selected{% endif %}>Created</option>
+      <option value="title"   {% if values.sort == 'title' %}selected{% endif %}>Title</option>
+    </select>
+  </label>
+
+  <label>
+    Direction:
+    <select name="dir">
+      <option value="desc" {% if values.dir == 'desc' or not values.dir %}selected{% endif %}>Desc</option>
+      <option value="asc"  {% if values.dir == 'asc' %}selected{% endif %}>Asc</option>
+    </select>
+  </label>
+
 
   <button type="submit">Apply</button>
   <a href="{% url 'note_lists' %}">Reset</a>

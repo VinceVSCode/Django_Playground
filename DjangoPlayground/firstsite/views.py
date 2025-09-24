@@ -84,8 +84,21 @@ def note_lists_view(request):
             Q(title__icontains=search) | Q(content__icontains=search)
         )
 
-    # Order notes by creation date (newest first)
-    notes = notes.order_by('-is_pinned', '-updated_at').distinct()
+    # ---- Sorting (defaults: updated description) ----
+    sort = request.GET.get('sort', 'updated')   # 'updated' | 'created' | 'title'
+    direction = request.GET.get('dir', 'desc')  # 'asc' | 'desc'
+
+    field_map = {
+        'updated': 'updated_at',
+        'created': 'created_at',
+        'title':   'title',
+    }
+    order_field = field_map.get(sort, 'updated_at')
+    prefix = '' if direction == 'asc' else '-'
+
+    # Keep pinned notes first; then apply chosen ordering
+    notes = notes.order_by('-is_pinned', f'{prefix}{order_field}').distinct()
+
 
     # Paginate the notes shown, 8 per page.
     paginator = Paginator(notes, 8)
