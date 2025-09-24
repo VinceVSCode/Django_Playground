@@ -44,6 +44,24 @@
 {% if page_obj.object_list %}
   <ul>
     {% for note in page_obj.object_list %}
+        <div style="margin-top:.5rem">
+      <a class="button" href="{% url 'note_detail' note.pk %}">View</a>
+      <a class="button" href="{% url 'note_edit' note.pk %}">Edit</a>
+      <a class="button" href="{% url 'note_delete' note.pk %}">Delete</a>
+
+      <form action="{% url 'note_toggle_pin' note.pk %}" method="post" class="inline">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button class="button" type="submit">{% if note.is_pinned %}Unpin{% else %}Pin{% endif %}</button>
+      </form>
+
+      <form action="{% url 'note_toggle_archive' note.pk %}" method="post" class="inline">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button class="button" type="submit">{% if note.is_archived %}Restore{% else %}Archive{% endif %}</button>
+      </form>
+    </div>
+
       <li class="card">
         <strong>
           <a href="{% url 'note_detail' note.pk %}">{{ note.title }}</a>
