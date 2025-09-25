@@ -87,3 +87,12 @@ textarea{min-height:120px}
 .muted{color:var(--muted)}
 
 .pagination{display:flex;gap:.5rem;align-items:center;margin-top:.75rem;flex-wrap:wrap}
+
+.pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: #fbfbfd;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: .5rem;
+  white-space: pre-wrap;
+}

@@ -24,5 +24,33 @@
   <a href="{% url 'note_lists' %}">Back to list</a>
 </p>
 
+<!-- Version History -->
+<div class="card" style="margin-top:1rem;">
+  <h2 style="margin-top:0;">History</h2>
+  {% if versions %}
+    <ul style="list-style:none;padding-left:0;">
+      {% for v in versions %}
+        <li class="card" style="margin-bottom:.5rem;">
+          <div>
+            <strong>{{ v.timestamp|date:"Y-m-d H:i" }}</strong>
+            <span class="muted">by {{ v.updated_by.username|default:"(unknown)" }}</span>
+          </div>
+          
+          <div style="margin:.35rem 0;">
+            <div><strong>Title:</strong> {{ v.title|default:"(empty)" }}</div>
+             <div class="pre">{{ v.content|default:"(empty)" }}</div>
+          </div>
+          <!-- Restore version form -->
+          <form method="post" action="{% url 'note_restore_version' note.pk v.pk %}" class="inline">
+            {% csrf_token %}
+            <button class="button" type="submit">Restore this version</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">No history yet.</p>
+  {% endif %}
+
 </div>
 {% endblock %}
