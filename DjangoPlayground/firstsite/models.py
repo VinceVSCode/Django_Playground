@@ -38,6 +38,8 @@ class NoteVersion(models.Model):
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey( User,on_delete=models.SET_NULL,null=True,blank=True,related_name='note_versions')
+
 
     def __str__(self):
         return f"Version of {self.note.title} at {self.timestamp}"

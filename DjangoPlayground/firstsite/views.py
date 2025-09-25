@@ -165,6 +165,7 @@ def note_toggle_archive(request, pk):
 @login_required
 def note_detail_view(request, pk):
     note = get_object_or_404(Note, pk=pk, owner=request.user)
+    versions = note.versions.order_by('-timestamp')  # related_name='versions' on NoteVersion
     return render(request, 'firstsite/note_detail.html', {'note': note})
 
 
@@ -249,6 +250,28 @@ def note_delete_view(request, pk):
         messages.success(request, "Note deleted successfully.")
         return redirect("note_lists")
     return render(request, "firstsite/confirm_delete.html", {"note": note})
+
+# Note Restore Version
+@login_required
+@require_POST
+def note_restore_version(request, pk, version_id):
+    note = get_object_or_404(Note, pk=pk, owner=request.user)
+    version =  get_object_or_404(NoteVersion, pk=version_id, note=note)
+    # Snapshot current state before restoring (so we don't lose it)
+    NoteVersion.objects.create(
+        note=note,
+        title=note.title,
+        content=note.content,
+        updated_by=request.user,
+    )
+
+    # Restore the note's content from the selected version
+    note.title = version.title
+    note.content = version.content
+    
+    note.save(update_fields=['title', 'content', 'updated_at'])
+    messages.success(request, "Version restored.")
+    return redirect("note_detail", pk=note.pk)
 
 # Tag views
 @login_required
