@@ -6,7 +6,8 @@ from rest_framework.decorators import api_view, permission_classes
 from django.views.decorators.http import require_POST
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .serializers import NoteSerializer , TagSerializer
+from rest_framework import status
+from .serializers import NoteSerializer , TagSerializer, NoteVersionSerializer
 from django.db.models import Q
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -415,19 +416,20 @@ def api_note_detail(request, pk):
         return Response(serializer.data)
     
     elif request.method == 'PUT':
+        # snapshot first for versioning
+        NoteVersion.objects.create(
+        note=note,
+        title=note.title,
+        content=note.content,
+        updated_by=request.user
+        )
+
         #  Update the note details
         serializer = NoteSerializer(note, data=request.data)
         if serializer.is_valid():
-            # First save the current version before updating
-            NoteVersion.objects.create(
-                note=note,
-                title=note.title,
-                content=note.content,
-                updated_by= request.user
-
-            )
             serializer.save()
-            # Optional: update tags
+
+            # update tags
             tags = request.data.get('tags', [])
             note.tags.set(Tag.objects.filter(id__in=tags, owner=request.user))
             
@@ -438,11 +440,47 @@ def api_note_detail(request, pk):
         # Delete the note
         note.delete()
         return Response(status=204)
-    
-# Tag API endpoint
 
-@api_view(['GET', 'POST'])
+# Note Version API endpoint
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def api_note_versions(request, pk):
+    """
+    List versions for a note the user owns (newest first).
+    GET /api/notes/<pk>/versions/
+    """
+    note = get_object_or_404(Note, pk=pk, owner=request.user)
+    versions =  note.versions.order_by('-timestamp')  # related_name='versions' on NoteVersion
+    data = NoteVersionSerializer(versions, many=True).data
+    return Response(data, status=200)
+
+# API restore version endpoint
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_note_restore_version(request, pk, version_id):
+    """
+    Restore a note from a specific version, snapshotting the current state first.
+    POST /api/notes/<pk>/versions/<version_id>/restore/
+    """
+    note= get_object_or_404(Note, pk=pk, owner=request.user)
+    version = get_object_or_404(NoteVersion, pk=version_id, note=note)
+
+    # Snapshot the current state before restoring (so we don't lose it)
+    NoteVersion.objects.create(
+        note=note,
+        title=note.title,
+        content=note.content,
+        updated_by=request.user,
+    )
+
+    # Restore the note's content from the selected version
+    note.title = version.title
+    note.content = version.content
+    note.save(update_fields=['title', 'content', 'updated_at'])
+
+    # Return the updated note data
+    return Response(NoteSerializer(note).data, status=200)
+
 def api_list_tags(request):
     """
     List all tags for the authenticated user.
@@ -463,4 +501,4 @@ def api_list_tags(request):
 
             return Response(TagSerializer(tag).data, status=201) # Return the created tag data and proper status
 
-        return Response(serializer.errors, status=400) # Return the errors if the serializer is not valid
+    return Response(serializer.errors, status=400) # Return the errors if the serializer is not valid
