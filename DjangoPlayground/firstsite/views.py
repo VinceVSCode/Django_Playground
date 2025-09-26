@@ -167,7 +167,7 @@ def note_toggle_archive(request, pk):
 def note_detail_view(request, pk):
     note = get_object_or_404(Note, pk=pk, owner=request.user)
     versions = note.versions.order_by('-timestamp')  # related_name='versions' on NoteVersion
-    return render(request, 'firstsite/note_detail.html', {'note': note}, {'versions': versions})
+    return render(request, 'firstsite/note_detail.html', {'note': note,'versions': versions})
 
 
 # API endpoint to create a new note
