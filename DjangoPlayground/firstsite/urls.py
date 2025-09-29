@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import api_note_detail, api_note_versions, api_user_notes, create_note, hello_world, note_lists_view, note_restore_version, tag_create_view, user_notes ,api_list_tags, note_detail_view, note_update_view, note_delete_view,note_toggle_pin, note_toggle_archive, tag_list_view, tag_update_view, tag_delete_view, api_note_restore_version
+from .views import api_note_detail, api_note_version_detail, api_note_versions, api_user_notes, create_note, hello_world, note_lists_view, note_restore_version, tag_create_view, user_notes ,api_list_tags, note_detail_view, note_update_view, note_delete_view,note_toggle_pin, note_toggle_archive, tag_list_view, tag_update_view, tag_delete_view, api_note_restore_version
 
 
 
@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/notes/<int:pk>/', api_note_detail, name='api_note_detail'), # API endpoint to get a specific note
     path('api/notes/<int:pk>/versions/', api_note_versions, name='api_note_versions'),
     path('api/notes/<int:pk>/versions/<int:version_id>/restore/', api_note_restore_version, name='api_note_restore_version'),
+    path('api/notes/<int:pk>/versions/<int:version_id>/', api_note_version_detail, name='api_note_version_detail'),
 
     # API tag endpoints
     path('api/tags/', api_list_tags, name='api_list_tags'), # API endpoint to list all tags

@@ -502,3 +502,19 @@ def api_list_tags(request):
             return Response(TagSerializer(tag).data, status=201) # Return the created tag data and proper status
 
     return Response(serializer.errors, status=400) # Return the errors if the serializer is not valid
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_note_version_detail(request, pk, version_id):
+    """
+    Return a specific note version for a note the user owns.
+    GET /api/notes/<pk>/versions/<version_id>/
+    """
+    note = get_object_or_404(Note, pk=pk, owner=request.user)
+    try:
+        version = get_object_or_404(NoteVersion, pk = version_id, note= note)
+        data = NoteVersionSerializer(version).data
+
+        return Response(data, status=200)
+    except NoteVersion.DoesNotExist:
+        return Response({'error': 'Note version not found'}, status=404)
