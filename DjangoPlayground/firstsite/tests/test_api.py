@@ -36,11 +36,19 @@ def test_api_versions_restore(client, user, note, db):
                           content_type="application/json", 
                           **auth_header(user)
                           )
+    
     assert response.status_code == 200
     # Check one version created
     assert NoteVersion.objects.filter(note=note).count() == 1
 
     version =  NoteVersion.objects.filter(note=note).first()
+    if version is None:
+        version = NoteVersion.objects.create(
+            note=note,
+            title="backup title (NONE CASE)",
+            content="backup content (NONE CASE)",
+            updated_by=user,
+        )
     # Now we restore the version with the API
     response = client.post(f"/api/notes/{note.pk}/versions/{version.pk}/restore/", **auth_header(user))
     assert response.status_code == 200

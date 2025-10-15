@@ -3,7 +3,7 @@ from django.db import IntegrityError
 from firstsite.models import Note, Tag
 
 def test_note_defaults(user):
-    note = Note.object.create(title= "Test123 Note", content = "C", owner=user)
+    note = Note.objects.create(title= "Test123 Note", content = "C", owner=user)
     assert note.is_pinned is False
     assert note.is_archived is False
     assert note.created_at and note.updated_at
