@@ -12,11 +12,11 @@ def auth_header(user):
 # Test to ensure API fetches only notes owned by the authenticated user
 def test_api_list_only_own_notes(client, user, db):
     # Get user notes
-    notes= Note.objects.create(title = "Mine", contents="some content", owner=user)
+    notes= Note.objects.create(title = "Mine", content="some content", owner=user)
     # some other notes
     from django.contrib.auth.models import User
     bob = User.objects.create_user("bob", password="top_secret")
-    Note.objects.create(title = "Not Mine", contents="other content", owner=bob)
+    Note.objects.create(title = "Not Mine", content="other content", owner=bob)
 
     # Call API
     response = client.get("/api/notes/", **auth_header(user))
