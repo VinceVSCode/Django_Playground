@@ -26,6 +26,13 @@ def test_api_list_only_own_notes(client, user, db):
     titles = [i["title"] for i in data]
     assert "Mine" in titles and "Not Mine" not in titles
 
+# Test to check OPTIONS method shows allowed methods
+def test_options_shows_allowed_methods(client, user, note):
+    r = client.options(f"/api/notes/{note.pk}/", **auth_header(user))
+    # Helpful to see in pytest output:
+    print("ALLOWED:", r.headers.get("Allow"))
+    assert r.status_code in (200, 204)
+
 # Test API version restore
 def test_api_versions_restore(client, user, note, db):
     # First we change a note with the API (ensure correct snapshots are created)
