@@ -2,3 +2,8 @@ pip install -U pip setuptools wheel Cython ; pip install --no-build-isolation -r
 pip install pytest pytest-django factory_boy djangorestframework
 pip install whitenoise
 
+Bash testing: pytest -vv -rA --color=no | tee pytest_report.txt
+Bash only failures:pytest -vv --tb=short --color=no | tee pytest_full.txt | sed -n '/^=*\s*FAILURES\s*=*$/,$p' > pytest_failures.txt
+Powershell testing: pytest -vv -rA --tb=short --color=no *>&1 | Tee-Object -FilePath pytest_report.txt
+
+
