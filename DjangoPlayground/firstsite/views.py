@@ -402,18 +402,13 @@ def api_note_detail(request, pk):
     """
     Retrieve a specific note for the authenticated user.
     """
-    try:
-        # Look up the note by primary key (pk) and ensure it belongs to the authenticated user
-        note = Note.objects.get(pk=pk, owner=request.user)
-    except Note.DoesNotExist:
-        # Handle the case where the note does not exist
-        return Response({'error': 'Note not found'}, status=404)
+    
+    note = get_object_or_404(Note, pk=pk, owner=request.user)
 
     # The NoteExists. Read a single note.
     if request.method == 'GET':
         # Retrieve the note details
-        serializer = NoteSerializer(note)
-        return Response(serializer.data)
+        return Response(NoteSerializer(note).data, status=status.HTTP_200_OK)
     
     elif request.method == 'PUT':
         # snapshot first for versioning
@@ -433,7 +428,7 @@ def api_note_detail(request, pk):
             tags = request.data.get('tags', [])
             note.tags.set(Tag.objects.filter(id__in=tags, owner=request.user))
             
-            return Response(serializer.data)
+            return Response(serializer.data, status=200)
         return Response(serializer.errors, status=400)
 
     elif request.method == 'DELETE':
