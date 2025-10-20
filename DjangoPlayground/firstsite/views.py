@@ -396,7 +396,7 @@ def api_user_notes(request):
         return Response(serializer.errors, status=400)
 
 # API endpoint to retrieve a specific note
-@api_view(['GET, PUT, DELETE'])
+@api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def api_note_detail(request, pk):
     """
@@ -476,6 +476,8 @@ def api_note_restore_version(request, pk, version_id):
     # Return the updated note data
     return Response(NoteSerializer(note).data, status=200)
 
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 def api_list_tags(request):
     """
     List all tags for the authenticated user.
