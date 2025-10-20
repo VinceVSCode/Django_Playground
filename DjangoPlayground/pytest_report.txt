@@ -1,0 +1,53 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.0, pytest-8.4.2, pluggy-1.6.0 -- c:\Users\Xionathropo\Documents\GitHub\Django_Playground\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+django: version: 5.2.4, settings: DjangoPlayground.settings (from ini)
+rootdir: C:\Users\Xionathropo\Documents\GitHub\Django_Playground\DjangoPlayground
+configfile: pytest.ini
+plugins: Faker-37.8.0, django-4.11.1
+collecting ... collected 6 items
+
+firstsite/tests/test_api.py::test_api_list_only_own_notes PASSED         [ 16%]
+firstsite/tests/test_api.py::test_api_versions_restore FAILED            [ 33%]
+firstsite/tests/test_models.py::test_note_defaults PASSED                [ 50%]
+firstsite/tests/test_models.py::test_tag_unique_per_user PASSED          [ 66%]
+firstsite/tests/test_views_html.py::test_notes_list_renders PASSED       [ 83%]
+firstsite/tests/test_views_html.py::test_note_list_requires_login PASSED [100%]
+
+================================== FAILURES ===================================
+__________________________ test_api_versions_restore __________________________
+
+client = <django.test.client.Client object at 0x00000271C6763C50>
+user = <User: alice>, note = <Note: Hello>, db = None
+
+    def test_api_versions_restore(client, user, note, db):
+        # First we change a note with the API (ensure correct snapshots are created)
+        payload = {"title": " New", "content": "Changed"}
+        # call API
+        response = client.put(f"/api/notes/{note.pk}/",
+                              data=json.dumps(payload),
+                              content_type="application/json",
+                              **auth_header(user)
+                              )
+    
+>       assert response.status_code == 200
+E       assert 405 == 200
+E        +  where 405 = <Response status_code=405, "application/json">.status_code
+
+firstsite\tests\test_api.py:40: AssertionError
+------------------------------ Captured log call ------------------------------
+WARNING  django.request:log.py:253 Method Not Allowed: /api/notes/1/
+=================================== PASSES ====================================
+________________________ test_api_list_only_own_notes _________________________
+---------------------------- Captured stderr setup ----------------------------
+Creating test database for alias 'default'...
+-------------------------- Captured stderr teardown ---------------------------
+Destroying test database for alias 'default'...
+=========================== short test summary info ===========================
+PASSED firstsite/tests/test_api.py::test_api_list_only_own_notes
+PASSED firstsite/tests/test_models.py::test_note_defaults
+PASSED firstsite/tests/test_models.py::test_tag_unique_per_user
+PASSED firstsite/tests/test_views_html.py::test_notes_list_renders
+PASSED firstsite/tests/test_views_html.py::test_note_list_requires_login
+FAILED firstsite/tests/test_api.py::test_api_versions_restore - assert 405 ==...
+========================= 1 failed, 5 passed in 2.18s =========================
