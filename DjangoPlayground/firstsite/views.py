@@ -437,18 +437,58 @@ def api_note_detail(request, pk):
         return Response(status=204)
 
 # Note Version API endpoint
-@api_view(['GET'])
+@api_view(['GET','DELETE','PUT'])
 @permission_classes([IsAuthenticated])
 def api_note_versions(request, pk):
     """
-    List versions for a note the user owns (newest first).
-    GET /api/notes/<pk>/versions/
+    Versions for a single note.
+
+    GET    /api/notes/<pk>/versions/?page=1&page_size=20   -> paginated list (newest first)
+    POST   /api/notes/<pk>/versions/                        -> create manual snapshot of current note
+    DELETE /api/notes/<pk>/versions/?all=true               -> delete all versions (guarded)
     """
     note = get_object_or_404(Note, pk=pk, owner=request.user)
-    versions =  note.versions.order_by('-timestamp')  # related_name='versions' on NoteVersion
-    data = NoteVersionSerializer(versions, many=True).data
-    return Response(data, status=200)
+    if request.method == 'GET':
+        qs = note.versions.order_by('-timestamp')  # related_name='versions' on NoteVersion
+         # Simple, explicit pagination
+        try:
+            page = int(request.GET.get('page', 1))
+        except ValueError:
+            page = 1
+        try:
+            page_size = int(request.GET.get('page_size', 20))
+        except ValueError:
+            page_size = 20
+        page_size = max(1, min(page_size, 10))  # cap at 10
 
+        paginator = Paginator(qs, page_size)
+        page_obj = paginator.get_page(page)
+        data = NoteVersionSerializer(page_obj.object_list, many=True).data
+
+        return Response({
+            'count': paginator.count,
+            'num_pages': paginator.num_pages,
+            'page': page_obj.number,
+            'page_size': page_size,
+            'results': data,
+        }, status=status.HTTP_200_OK)
+
+    if request.method == 'POST':
+        v = NoteVersion.objects.create(
+            note=note,
+            title=note.title,
+            content=note.content,
+            updated_by=request.user,
+        )
+        return Response(NoteVersionSerializer(v).data, status=status.HTTP_201_CREATED)
+
+    if request.method == 'DELETE':
+        # Guard (so a stray call can't wipe history)
+        if request.GET.get('all') == 'true':
+            note.versions.all().delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'detail': 'Pass ?all=true to delete all versions.'},
+                        status=status.HTTP_400_BAD_REQUEST)
 # API restore version endpoint
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
