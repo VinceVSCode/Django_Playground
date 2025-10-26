@@ -450,7 +450,8 @@ def api_note_versions(request, pk):
     note = get_object_or_404(Note, pk=pk, owner=request.user)
     if request.method == 'GET':
         qs = note.versions.order_by('-timestamp')  # related_name='versions' on NoteVersion
-         # Simple, explicit pagination
+        
+        # Simple, explicit pagination
         try:
             page = int(request.GET.get('page', 1))
         except ValueError:
@@ -459,7 +460,7 @@ def api_note_versions(request, pk):
             page_size = int(request.GET.get('page_size', 20))
         except ValueError:
             page_size = 20
-        page_size = max(1, min(page_size, 10))  # cap at 10
+        page_size = max(1, min(page_size, 100))  # cap at 10
 
         paginator = Paginator(qs, page_size)
         page_obj = paginator.get_page(page)

@@ -1,0 +1,16 @@
+<!-- 404.html -->
+{% load static %}
+<!doctype html>
+<html><head>
+  <meta charset="utf-8">
+  <title>Not found</title>
+  <link rel="stylesheet" href="{% static 'firstsite/styles.css' %}">
+</head><body>
+  <div class="container">
+    <div class="card" style="margin-top:2rem;text-align:center;">
+      <h1>404</h1>
+      <p class="muted">The requested page was not found.</p>
+      <p><a class="button" href="{% url 'note_lists' %}">Back to your notes</a></p>
+    </div>
+  </div>
+</body></html>

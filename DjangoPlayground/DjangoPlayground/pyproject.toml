@@ -1,6 +1,6 @@
 [tool.ruff]
 line-length = 88
-target-version = ["py311"]
+target-version = "py311"
 
 # Enable common rule sets. DJ= Django, I = import order 
 select = ["E", "F", "W","I", "UP",  "DJ"] 
@@ -9,4 +9,4 @@ select = ["E", "F", "W","I", "UP",  "DJ"]
 ignore = ["E501"]
 
 [tool.ruff.isort ]
-known-first-party = ["DjangoPlayground","firstsite]
+known-first-party = ["DjangoPlayground","firstsite"]
