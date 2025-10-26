@@ -76,6 +76,13 @@
   <a href="{% url 'note_lists' %}">Reset</a>
 </form>
 
+{% if not page_obj.object_list %}
+  <div class="card" style="text-align:center;">
+    <p class="muted">No notes match your filters.</p>
+    <p><a class="button" href="{% url 'create_note' %}">Create your first note</a></p>
+  </div>
+{% endif %}
+
 {% if page_obj.object_list %}
   <ul>
     {% for note in page_obj.object_list %}

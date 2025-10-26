@@ -30,7 +30,7 @@ nav a:hover { text-decoration: underline; }
   padding: 0 1rem;
 }
 
-h1, h2, h3 { margin: .5rem 0 1rem; }
+h1, h2, h3 { margin: .4rem 0 1rem; }
 
 ul { list-style: none; padding: 0; }
 li.card,.card {
@@ -83,7 +83,10 @@ textarea{min-height:120px}
 .message{padding:.6rem .8rem;border-bottom:1px solid var(--border);background:#f6fbff}
 .message.success{background:#f0fff4}.message.error{background:#fff5f5}.message.warning{background:#fffbea}
 
-.tagpill{display:inline-block;padding:.15rem .5rem;border:1px solid var(--border);border-radius:999px;background:#fff;margin-right:.25rem;font-size:.85em}
+.tagpill{
+  display:inline-block; padding:.15rem .5rem; border:1px solid var(--border);
+  border-radius:999px; background:#f7faff; border-color:#dfe8ff; margin-right:.25rem; font-size:.85em
+}
 .muted{color:var(--muted)}
 
 .pagination{display:flex;gap:.5rem;align-items:center;margin-top:.75rem;flex-wrap:wrap}
