@@ -1,0 +1,12 @@
+[tool.ruff]
+line-length = 88
+target-version = ["py311"]
+
+# Enable common rule sets. DJ= Django, I = import order 
+select = ["E", "F", "W","I", "UP",  "DJ"] 
+
+# Ignore long-line rule since We set line-length anyway
+ignore = ["E501"]
+
+[tool.ruff.isort ]
+known-first-party = ["DjangoPlayground","firstsite]
