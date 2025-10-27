@@ -1,5 +1,6 @@
 from django import forms
 from .models import Note, Tag
+from django.contrib.auth.models import User
 
 # Form for creating and updating notes
 class NoteForm(forms.ModelForm):
@@ -39,3 +40,14 @@ class TagForm(forms.ModelForm):
             if qs.exists():
                 raise forms.ValidationError("You already have a tag with that name.")
         return name
+
+# Form for sending a note to another user   
+class SendNoteForm(forms.Form):
+    recipient_username = forms.CharField(max_length=150, label="Send to (username)")
+
+    def clean_recipient_username(self):
+        name = self.cleaned_data['recipient_username'].strip()
+        try:
+            return User.objects.get(username=name)
+        except User.DoesNotExist:
+            raise forms.ValidationError("No such user.")
