@@ -319,6 +319,38 @@ def tag_delete_view(request, pk):
         return redirect('tag_list')
     return render(request, 'firstsite/tag_confirm_delete.html', {'tag': tag})
 
+# SendNote functions
+@login_required
+def note_send_view(request, pk):
+    """
+    View to send a note to another user.
+    """
+    note = get_object_or_404(Note, pk=pk, owner=request.user)
+    if request.method == "POST":
+        form = SendNoteForm(request.POST)
+        if form.is_valid():
+            recipient = form.cleaned_data['recipient_username']
+            # Create a copy of the note for the recipient.
+            copy = Note.objects.create(
+                title = note.title,
+                content = note.content,
+                owner =  recipient,
+                is_pinned = False,
+                is_archived = False,
+            )
+            # Copy tags if any
+            copy.tags.set(note.tags.all())
+
+            # Log send action
+            NoteSend.objects.create(original_note=note, sender=request.user, recipient=recipient)
+            NoteEvent.objects.create(user =request.user, note=note, action = NoteEvent.ACTION_SEND)
+
+            messages.success(request, f"Note sent to {recipient.username}.")
+            return redirect("note_detail", pk=note.pk)
+    else:
+        form = SendNoteForm()
+    return render(request, "firstsite/send_note.html", {"form": form, "note": note})
+
 # API endpoint to create a new note
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
@@ -556,35 +588,35 @@ def api_note_version_detail(request, pk, version_id):
         return Response(data, status=200)
     except NoteVersion.DoesNotExist:
         return Response({'error': 'Note version not found'}, status=404)
-    
-# SendNote functions
-@login_required
-def note_send_view(request, pk):
+
+# API send note endpoint    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_note_send(request,pk):
     """
-    View to send a note to another user.
+    Send a note to another user.
+    POST /api/notes/<pk>/send/
     """
     note = get_object_or_404(Note, pk=pk, owner=request.user)
-    if request.method == "POST":
-        form = SendNoteForm(request.POST)
-        if form.is_valid():
-            recipient = form.cleaned_data['recipient_username']
-            # Create a copy of the note for the recipient.
-            copy = Note.objects.create(
-                title = note.title,
-                content = note.content,
-                owner =  recipient,
-                is_pinned = False,
-                is_archived = False,
-            )
-            # Copy tags if any
-            copy.tags.set(note.tags.all())
+    username = request.data.get('recipient_username','').strip()
+    try:
+        recipient =  User.objects.get(username=username)
+    except User.DoesNotExist:
+        return Response({'detail': 'Recipient not found'}, status=400)
 
-            # Log send action
-            NoteSend.objects.create(original_note=note, sender=request.user, recipient=recipient)
-            NoteEvent.objects.create(user =request.user, note=note, action = NoteEvent.ACTION_SEND)
+    # Create a copy of the note for the recipient.
+    copy = Note.objects.create(
+        title = note.title,
+        content = note.content,
+        owner =  recipient,
+        is_pinned = False,
+        is_archived = False,
+    )
+    # Copy tags if any
+    copy.tags.set(note.tags.all())
 
-            messages.success(request, f"Note sent to {recipient.username}.")
-            return redirect("note_detail", pk=note.pk)
-    else:
-        form = SendNoteForm()
-    return render(request, "firstsite/send_note.html", {"form": form, "note": note})
+    # Log send action
+    NoteSend.objects.create(original_note=note, sender=request.user, recipient=recipient)
+    NoteEvent.objects.create(user =request.user, note=note, action = NoteEvent.ACTION_SEND)
+    # Return success response
+    return Response({'detail': f'Sent to {recipient.username}.'}, status=201)

@@ -10,6 +10,7 @@ urlpatterns = [
     path('notes/create/', v.create_note, name='create_note'), # Maps the URL /firstsite/notes/create/ to the create_note view.
     path('notes/list/', v.note_lists_view, name='note_lists'), # Maps the URL /firstsite/notes/list/ to the note_lists_view.
     path('notes/<int:pk>/', v.note_detail_view, name='note_detail'), # Maps the URL /firstsite/notes/<int:pk>/ to the note_detail_view.
+    path('notes/<int:pk>/send/', v.note_send_view, name='note_send'), # Send note to another user functionality
     path('notes/<int:pk>/edit/', v.note_update_view, name='note_edit'),
     path('notes/<int:pk>/delete/', v.note_delete_view, name='note_delete'),
     path('notes/<int:pk>/toggle-pin/', v.note_toggle_pin, name='note_toggle_pin'), # Toggle pin status of a note
