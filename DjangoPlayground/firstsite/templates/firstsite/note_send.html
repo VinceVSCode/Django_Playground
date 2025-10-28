@@ -1,0 +1,13 @@
+{% extends "firstsite/base.html" %}
+{% block title %}Send Note{% endblock %}
+{% block content %}
+<div class="card" style="max-width:520px;">
+  <h2 style="margin-top:0;">Send “{{ note.title }}”</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="button" type="submit">Send</button>
+    <a class="button" href="{% url 'note_detail' note.pk %}">Cancel</a>
+  </form>
+</div>
+{% endblock %}

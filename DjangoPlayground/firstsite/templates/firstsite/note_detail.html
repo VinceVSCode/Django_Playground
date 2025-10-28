@@ -45,6 +45,11 @@
             {% csrf_token %}
             <button class="button" type="submit">Restore this version</button>
           </form>
+          <!-- Send note form -->
+          <form method="get" action="{% url 'note_send' note.pk %}" class="inline">
+            <button class="button" type="submit">Send Note</button>
+          </form>
+
         </li>
       {% endfor %}
     </ul>
