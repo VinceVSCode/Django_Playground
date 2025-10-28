@@ -25,12 +25,14 @@ urlpatterns = [
 
     # API note endpoints
     path('api/notes/', v.api_user_notes, name='api_user_notes'), # API endpoint to get user notes
+    path('api/analytics/notes/', v.api_note_analytics, name='api_note_analytics'),
     #path('api/notes/create/', api_user_notes, name='api_create_note'), # API endpoint to create a new note
     path('api/notes/<int:pk>/', v.api_note_detail, name='api_note_detail'), # API endpoint to get a specific note
+    path('api/notes/<int:pk>/send/', v.api_note_send, name='api_note_send'), 
     path('api/notes/<int:pk>/versions/', v.api_note_versions, name='api_note_versions'),
     path('api/notes/<int:pk>/versions/<int:version_id>/restore/', v.api_note_restore_version, name='api_note_restore_version'),
     path('api/notes/<int:pk>/versions/<int:version_id>/', v.api_note_version_detail, name='api_note_version_detail'),
-
+    
     # API tag endpoints
     path('api/tags/', v.api_list_tags, name='api_list_tags'), # API endpoint to list all tags
 ]

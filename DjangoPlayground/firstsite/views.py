@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Note, NoteVersion, Tag, NoteSend, NoteEvent
 from .forms import NoteForm, TagForm, SendNoteForm
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from rest_framework.decorators import api_view, permission_classes
 from django.views.decorators.http import require_POST
 from rest_framework.permissions import IsAuthenticated
@@ -12,6 +13,8 @@ from django.db.models import Q
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.utils.dateparse import parse_date
+from django.db.models import Count
+from django.db.models.functions import TruncDay, TruncWeek, TruncMonth, TruncYear
 
 
 """
@@ -620,3 +623,45 @@ def api_note_send(request,pk):
     NoteEvent.objects.create(user =request.user, note=note, action = NoteEvent.ACTION_SEND)
     # Return success response
     return Response({'detail': f'Sent to {recipient.username}.'}, status=201)
+
+# Analytics endpoint
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_note_analytics(request):
+    """
+    GET /api/analytics/notes/?bucket=daily|weekly|monthly|yearly&actions=create,delete,send
+    Defaults: bucket=daily, actions=create,delete,send
+    """
+    bucket =  request.GET.get('bucket','daily')
+    actions = request.GET.get('actions','create,delete,send').split(',')
+
+    qs = NoteEvent.objects.filter(user=request.user, action__in=actions)
+    #create a map
+    trunc_map = {
+        'daily': TruncDay('created_at'),
+        'weekly': TruncWeek('created_at'),
+        'monthly': TruncMonth('created_at'),
+        'yearly': TruncYear('created_at'),
+    }
+    trunc = trunc_map.get(bucket, TruncDay('created_at'))
+    data = (qs
+        .annotate(period=trunc)
+        .values('period','action')
+        .annotate(count=Count('id'))
+        .order_by('period','action')
+    )
+
+    # Group data into {period: {action: count}}
+    result = {}
+    for row in data:
+        period = row['period'].date().isoformat() if hasattr(row['period'], 'date') else str(row['period'])
+        result.setdefault(period, {})
+        result[period][row['action']] = row['count']
+
+    return Response({
+        'bucket': bucket,
+        'actions': actions,
+        'series': result
+    },status=200)
+
+# End of views.py
