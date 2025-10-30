@@ -1,4 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
+
+from DjangoPlayground.firstsite.utils import attach_actor
 from .models import Note, NoteVersion, Tag, NoteSend, NoteEvent
 from .forms import NoteForm, TagForm, SendNoteForm
 from django.contrib.auth.decorators import login_required
@@ -152,6 +154,7 @@ def note_lists_view(request):
 def note_toggle_pin(request, pk):
     note = get_object_or_404(Note, pk=pk, owner=request.user)
     note.is_pinned = not note.is_pinned
+    attach_actor(note, request.user)
     note.save(update_fields=['is_pinned', 'updated_at'])
     messages.success(request, "Note pinned." if note.is_pinned else "Note unpinned.")
     return redirect(request.POST.get('next') or 'note_lists')
@@ -162,6 +165,7 @@ def note_toggle_pin(request, pk):
 def note_toggle_archive(request, pk):
     note = get_object_or_404(Note, pk=pk, owner=request.user)
     note.is_archived = not note.is_archived
+    attach_actor(note, request.user)
     note.save(update_fields=['is_archived', 'updated_at'])
     messages.success(request, "Note archived." if note.is_archived else "Note restored.")
     return redirect(request.POST.get('next') or 'note_lists')
@@ -180,6 +184,7 @@ def create_note(request):
     if request.method == "POST":
         form = NoteForm(request.POST, user=request.user)  # Pass the user to the form
         if form.is_valid():
+            attach_actor(note, request.user)
             note = form.save(commit=False)
             note.owner = request.user
             note.save()
@@ -208,6 +213,7 @@ def edit_note (request, pk):
                 content=note.content,
                 updated_by=request.user,
             )
+            
             form.save()  # saves fields + m2m
             return redirect("note_detail", pk=note.pk)
     else:
@@ -234,6 +240,7 @@ def note_update_view(request, pk):
                 content=note.content,
                 updated_by=request.user,
             )
+            attach_actor(note, request.user)
             form.save()  # saves fields + m2m
             messages.success(request, "Note updated successfully!")
             return redirect("note_detail", pk=note.pk)
@@ -250,6 +257,7 @@ def note_delete_view(request, pk):
     """
     note = get_object_or_404(Note, pk=pk, owner=request.user)
     if request.method == "POST":
+        attach_actor(note, request.user)
         note.delete()
         messages.success(request, "Note deleted successfully.")
         return redirect("note_lists")
@@ -342,6 +350,8 @@ def note_send_view(request, pk):
                 is_archived = False,
             )
             # Copy tags if any
+            attach_actor(note, request.user)
+            copy.save()
             copy.tags.set(note.tags.all())
 
             # Log send action
@@ -420,6 +430,7 @@ def api_user_notes(request):
         if serializer.is_valid():
             # Save the note with the authenticated user as the owner
             note = serializer.save(owner=request.user)
+            attach_actor(note, request.user)
             #Attach tags (if any)
             tags = request.data.get('tags', [])
             if tags:
@@ -457,6 +468,7 @@ def api_note_detail(request, pk):
         #  Update the note details
         serializer = NoteSerializer(note, data=request.data)
         if serializer.is_valid():
+            attach_actor(note, request.user)
             serializer.save()
 
             # update tags
@@ -468,6 +480,7 @@ def api_note_detail(request, pk):
 
     elif request.method == 'DELETE':
         # Delete the note
+        attach_actor(note, request.user)
         note.delete()
         return Response(status=204)
 
