@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 
-from DjangoPlayground.firstsite.utils import attach_actor
+from .utils import attach_actor
 from .models import Note, NoteVersion, Tag, NoteSend, NoteEvent
 from .forms import NoteForm, TagForm, SendNoteForm
 from django.contrib.auth.decorators import login_required
