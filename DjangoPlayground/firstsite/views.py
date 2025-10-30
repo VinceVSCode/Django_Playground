@@ -184,9 +184,9 @@ def create_note(request):
     if request.method == "POST":
         form = NoteForm(request.POST, user=request.user)  # Pass the user to the form
         if form.is_valid():
-            attach_actor(note, request.user)
             note = form.save(commit=False)
             note.owner = request.user
+            attach_actor(note, request.user)
             note.save()
             # sent a success message
             messages.success(request, "Note created successfully!")
