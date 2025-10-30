@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # Custom apps
-    'firstsite',  # Ensure this matches the name of the app folder
+    'firstsite',  # Ensure this matches the name of my app folder
     'rest_framework',
     'rest_framework.authtoken',  # Enable token authentication
 ]

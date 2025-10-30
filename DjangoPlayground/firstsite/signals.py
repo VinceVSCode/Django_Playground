@@ -3,8 +3,11 @@ from django.dispatch import receiver
 from django.contrib.auth.models import AnonymousUser
 from .models import Note, NoteEvent
 
+import logging
+logging.getLogger(__name__).warning("firstsite.signals imported")  # TEMP DEBUG
 # Helper: I will attach request.user to the Note instance before saving in the view.
 # This is a common pattern to access the user in signals. Also a safe fallback to AnonymousUser.
+print("Signals module imported")
 
 def _actor_for(instance):
     return getattr(instance, '_actor', None)

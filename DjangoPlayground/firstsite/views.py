@@ -280,7 +280,7 @@ def note_restore_version(request, pk, version_id):
     # Restore the note's content from the selected version
     note.title = version.title
     note.content = version.content
-    
+    attach_actor(note, request.user)
     note.save(update_fields=['title', 'content', 'updated_at'])
     messages.success(request, "Version restored.")
     return redirect("note_detail", pk=note.pk)
@@ -313,6 +313,8 @@ def tag_update_view(request, pk):
     if request.method == 'POST':
         form = TagForm(request.POST, instance=tag, user=request.user)
         if form.is_valid():
+            note = get_object_or_404(Note, pk=pk, owner=request.user)
+            attach_actor(note, request.user)
             form.save()
             messages.success(request, "Tag renamed.")
             return redirect('tag_list')
@@ -560,6 +562,7 @@ def api_note_restore_version(request, pk, version_id):
     # Restore the note's content from the selected version
     note.title = version.title
     note.content = version.content
+    attach_actor(note, request.user)
     note.save(update_fields=['title', 'content', 'updated_at'])
 
     # Return the updated note data
