@@ -336,7 +336,9 @@ def tag_delete_view(request, pk):
 @login_required
 def note_send_view(request, pk):
     """
-    View to send a note to another user.
+    HTML flow:
+    - GET: show a small form to enter recipient username
+    - POST: validate, copy the note to recipient (including tags), log send event
     """
     note = get_object_or_404(Note, pk=pk, owner=request.user)
     if request.method == "POST":
@@ -613,11 +615,16 @@ def api_note_version_detail(request, pk, version_id):
 @permission_classes([IsAuthenticated])
 def api_note_send(request,pk):
     """
-    Send a note to another user.
     POST /api/notes/<pk>/send/
+    Body: {"recipient_username": "bob"}
+    Action: creates a COPY for recipient; logs NoteSend + NoteEvent('send')
     """
     note = get_object_or_404(Note, pk=pk, owner=request.user)
     username = request.data.get('recipient_username','').strip()
+    # Validate recipient username
+    if not username:
+        return Response({'detail': 'Recipient username is required'}, status=400)
+    
     try:
         recipient =  User.objects.get(username=username)
     except User.DoesNotExist:
@@ -631,6 +638,8 @@ def api_note_send(request,pk):
         is_pinned = False,
         is_archived = False,
     )
+    attach_actor(copy, request.user)  # sender credited for create
+    copy.save()
     # Copy tags if any
     copy.tags.set(note.tags.all())
 
