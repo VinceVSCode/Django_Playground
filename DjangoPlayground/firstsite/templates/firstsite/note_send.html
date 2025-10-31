@@ -3,11 +3,15 @@
 {% block content %}
 <div class="card" style="max-width:520px;">
   <h2 style="margin-top:0;">Send “{{ note.title }}”</h2>
+  <p class="muted">Enter the recipient’s username. This sends a <strong>copy</strong> of your note to them.</p>
   <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
+    <div style="display:flex; gap:.5rem;">
     <button class="button" type="submit">Send</button>
     <a class="button" href="{% url 'note_detail' note.pk %}">Cancel</a>
+    </div>
   </form>
 </div>
 {% endblock %}
+
