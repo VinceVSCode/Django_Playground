@@ -17,11 +17,11 @@ def test_send_note_html_flow(client,user):
     note = Note.objects.create(owner=user, title="Test Note", content="Hello Test.")
 
     # GET form
-    r1 = client.get(f"/notes/{note.pk}/send/", **auth_header(user))
+    r1 = client.get(f"/notes/{note.pk}/send/")
     assert r1.status_code == 200
 
     #POST form
-    r2 = client.post(f"/notes/{note.pk}/send/", data={"recipient_username": recipient.username}, **auth_header(user))
+    r2 = client.post(f"/notes/{note.pk}/send/", data={"recipient_username": recipient.username})
     assert r2.status_code in (302, 303)  # redirect back to detail
 
     #Recipient got a copy
