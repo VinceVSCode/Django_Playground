@@ -1,0 +1,84 @@
+{% extends "firstsite/base.html" %}
+{% block title %}Analytics{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2 style="margin-top:0;">Notes Analytics</h2>
+
+  <!-- Filter form (no JS) -->
+  <form method="get" class="filter-bar" style="display:flex; gap:1rem; flex-wrap:wrap; align-items:end;">
+    <div>
+      <label for="bucket"><strong>Bucket</strong></label><br>
+      <select name="bucket" id="bucket">
+        {% for b in all_buckets %}
+          <option value="{{ b }}" {% if b == bucket %}selected{% endif %}>{{ b|capfirst }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label><strong>Actions</strong></label><br>
+      {% for a in all_actions %}
+        <label style="margin-right:.5rem;">
+          <input type="checkbox" name="actions" value="{{ a }}" {% if a in actions %}checked{% endif %}>
+          {{ a|capfirst }}
+        </label>
+      {% endfor %}
+    </div>
+
+    <div>
+      <button class="button" type="submit">Apply</button>
+      <a class="button" href="{% url 'analytics' %}">Reset</a>
+    </div>
+  </form>
+</div>
+
+{% if not periods %}
+  <div class="card" style="text-align:center;">
+    <p class="muted">No events yet for the chosen filters.</p>
+    <p class="muted">Create, update, delete, or send notes to see analytics.</p>
+  </div>
+{% else %}
+  <!-- Simple bar chart (pure CSS/HTML) -->
+  <div class="card">
+    <h3 style="margin-top:0;">{{ bucket|capfirst }} totals</h3>
+
+    <div style="overflow-x:auto;">
+      <table class="table analytics-table" style="width:100%; border-collapse:separate; border-spacing:0 .4rem;">
+        <thead>
+          <tr>
+            <th style="text-align:left; padding:.25rem .5rem;">Period</th>
+            {% for a in actions %}
+              <th style="text-align:left; padding:.25rem .5rem;">{{ a|capfirst }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+        {% for p in periods %}
+          <tr>
+            <td style="padding:.25rem .5rem; white-space:nowrap;"><strong>{{ p }}</strong></td>
+            {% for a in actions %}
+              {% with val=per_period.p.a max=max_val %}
+                {% if val > 0 %}
+                  <td style="padding:.25rem .5rem;">
+                    <div class="bar" title="{{ a }}: {{ val }}"
+                         style="height:0.75rem; width: {{ (val|floatformat:0) | floatformat:0 }}px;
+                                max-width: calc(240px * {{ val }}/{{ max_val }}); 
+                                background: #e6f0ff; border:1px solid #c9ddff; border-radius:6px; display:inline-block;"></div>
+                    <span class="muted" style="margin-left:.4rem; font-size:.9em;">{{ val }}</span>
+                  </td>
+                {% else %}
+                  <td style="padding:.25rem .5rem;"><span class="muted">0</span></td>
+                {% endif %}
+              {% endwith %}
+            {% endfor %}
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <p class="muted" style="margin-top:.5rem;">Bars are relative within this view (not absolute units).</p>
+  </div>
+{% endif %}
+{% endblock %}

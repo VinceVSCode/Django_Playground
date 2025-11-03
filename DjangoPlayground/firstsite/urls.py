@@ -36,4 +36,7 @@ urlpatterns = [
     
     # API tag endpoints
     path('api/tags/', v.api_list_tags, name='api_list_tags'), # API endpoint to list all tags
+
+    # Analytics endpoint
+    path('analytics/', v.analytics_view, name='analytics'), # View for analytics
 ]
