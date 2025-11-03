@@ -33,6 +33,7 @@ urlpatterns = [
     path('api/notes/<int:pk>/versions/<int:version_id>/restore/', v.api_note_restore_version, name='api_note_restore_version'),
     path('api/notes/<int:pk>/versions/<int:version_id>/', v.api_note_version_detail, name='api_note_version_detail'),
     
+    
     # API tag endpoints
     path('api/tags/', v.api_list_tags, name='api_list_tags'), # API endpoint to list all tags
 ]

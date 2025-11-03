@@ -488,6 +488,67 @@ def api_note_detail(request, pk):
         note.delete()
         return Response(status=204)
 
+# --- Analytics HTML page (server-rendered) ---
+@login_required
+def analytics_view(request):
+    """
+    Renders analytics using the same grouping logic as the API.
+    Reads query params (?bucket= & actions=) for consistency.
+    """
+    # read choices from query params
+    bucket = (request.GET.get('bucket') or 'daily').lower()
+    raw_actions = (request.GET.get('actions') or 'create,update,delete,send').lower()
+    actions = [a.strip() for a in raw_actions.split(',') if a.strip()]
+    allowed = {'create', 'update', 'delete', 'send'}
+    actions = [a for a in actions if a in allowed] or ['create', 'update', 'delete', 'send']
+
+    # Map bucket to trunc function
+    trunc_map = {
+        'daily': TruncDay('created_at'),
+        'weekly': TruncWeek('created_at'),
+        'monthly': TruncMonth('created_at'),
+        'yearly': TruncYear('created_at'),
+    }
+    trunc = trunc_map.get(bucket, TruncDay('created_at'))
+    if bucket not in trunc_map:
+        bucket = 'daily'
+    
+    #aggregate NoteEvents
+    qs = (NoteEvent.objects
+        .filter(user=request.user, action__in=actions)
+        .annotate(period=trunc)
+        .values('period','action')
+        .annotate(count=Count('id'))
+        .order_by('period')
+        )
+
+    # assemble a consistent structure for rendering
+    periods = []
+    per_period = {}
+    for row in qs:
+        key = row['period'].date().isoformat()
+        per_period.setdefault(key, {a: 0 for a in actions})
+        per_period[key][row['action']] = row['count']
+    periods = sorted(per_period.keys())  # display old->new
+
+    # compute max for bar scaling (avoid div by zero)
+    max_val = 0
+    for key in periods:
+        for a in actions:
+            max_val = max(max_val, per_period[key].get(a, 0))
+
+    ctx = {
+        'bucket': bucket,
+        'actions': actions,
+        'periods': periods,
+        'per_period': per_period,
+        'max_val': max_val or 1,
+        # for the form UI
+        'all_actions': ['create', 'update', 'delete', 'send'],
+        'all_buckets': ['daily', 'weekly', 'monthly', 'yearly'],
+    }
+    return render(request, 'firstsite/analytics.html', ctx)
+
 # Note Version API endpoint
 @api_view(['GET','DELETE','PUT'])
 @permission_classes([IsAuthenticated])
@@ -649,19 +710,37 @@ def api_note_send(request,pk):
     # Return success response
     return Response({'detail': f'Sent to {recipient.username}.'}, status=201)
 
-# Analytics endpoint
+# Note Analytics API endpoint
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def api_note_analytics(request):
     """
-    GET /api/analytics/notes/?bucket=daily|weekly|monthly|yearly&actions=create,delete,send
-    Defaults: bucket=daily, actions=create,delete,send
+    Query params:
+      - bucket: daily | weekly | monthly | yearly  (default: daily)
+      - actions: comma-separated subset of: create,update,delete,send
+                 (default: create,update,delete,send)
+    Response:
+      {
+        "bucket": "daily",
+        "actions": ["create","delete","send"],
+        "series": {
+          "2025-10-30": {"create": 2, "delete": 1, "send": 1},
+          ...
+        }
+      }
     """
-    bucket =  request.GET.get('bucket','daily')
-    actions = request.GET.get('actions','create,delete,send').split(',')
+    # parse params 
+    bucket =(request.GET.get('bucket') or 'daily').lower()
+    raw_actions = (request.GET.get('actions') or 'create,update,delete,send').lower()
+    actions = [a.strip() for a in raw_actions.split(',') if a.strip() ]
 
-    qs = NoteEvent.objects.filter(user=request.user, action__in=actions)
-    #create a map
+    # restrict actions, allowing certain values only
+    allowed ={'create', 'update', 'delete', 'send'}
+    actions = [a for a in actions if a in allowed]
+    if not actions:
+        actions = ['create','update','delete','send']
+    
+    #choose the trunc function
     trunc_map = {
         'daily': TruncDay('created_at'),
         'weekly': TruncWeek('created_at'),
@@ -669,7 +748,12 @@ def api_note_analytics(request):
         'yearly': TruncYear('created_at'),
     }
     trunc = trunc_map.get(bucket, TruncDay('created_at'))
-    data = (qs
+    if bucket not in trunc_map:
+        bucket = 'daily'  # reset to default if invalid
+
+    # aggregate
+    qs = (NoteEvent.objects
+        .filter(user=request.user, action__in=actions)
         .annotate(period=trunc)
         .values('period','action')
         .annotate(count=Count('id'))
@@ -677,16 +761,19 @@ def api_note_analytics(request):
     )
 
     # Group data into {period: {action: count}}
-    result = {}
-    for row in data:
-        period = row['period'].date().isoformat() if hasattr(row['period'], 'date') else str(row['period'])
-        result.setdefault(period, {})
-        result[period][row['action']] = row['count']
+    series = {}
+
+    for row in qs:
+        period = row['period']
+        # I want to normalize period to ISO date string for JSON keys
+        # (TruncWeek/Month/Year return datetimes too, safe to .date())
+        key = period.date().isoformat() if hasattr(period, 'date') else str(period)
+        series.setdefault(key, {})
+        series[key][row['action']] = row['count']
 
     return Response({
         'bucket': bucket,
         'actions': actions,
-        'series': result
-    },status=200)
-
+        'series': series
+    }, status=status.HTTP_200_OK)
 # End of views.py
