@@ -9,7 +9,13 @@
 <body>
   <header class="brandbar">
     <div class="brand">DjangoPlayground</div>
-    <nav class="nav">
+    <nav class="topbar" aria-label="Main navigation">
+      <a href="{% url 'note_lists' %}">Notes</a>
+      <a href="{% url 'analytics' %}">Analytics</a>
+      <!-- maybe user/logout here -->
+    </nav>
+
+    <nav class="nav" aria-label="User navigation">
       {% if request.user.is_authenticated %}
         <a href="{% url 'note_lists' %}">Notes</a>
         <a href="{% url 'create_note' %}">New note</a>
