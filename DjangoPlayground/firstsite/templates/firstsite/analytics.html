@@ -58,20 +58,19 @@
           <tr>
             <td style="padding:.25rem .5rem; white-space:nowrap;"><strong>{{ p }}</strong></td>
             {% for a in actions %}
-              {% with val=per_period.p.a max=max_val %}
-                {% if val > 0 %}
-                  <td style="padding:.25rem .5rem;">
-                    <div class="bar" title="{{ a }}: {{ val }}"
-                         style="height:0.75rem; width: {{ (val|floatformat:0) | floatformat:0 }}px;
-                                max-width: calc(240px * {{ val }}/{{ max_val }}); 
-                                background: #e6f0ff; border:1px solid #c9ddff; border-radius:6px; display:inline-block;"></div>
-                    <span class="muted" style="margin-left:.4rem; font-size:.9em;">{{ val }}</span>
-                  </td>
-                {% else %}
-                  <td style="padding:.25rem .5rem;"><span class="muted">0</span></td>
-                {% endif %}
-              {% endwith %}
+                {% with val=per_period.p.a %}
+                    {% if val > 0 %}
+                    <td>
+                        <div class="analytics-bar"
+                            style="width: calc(240px * {{ val }} / {{ max_val }});"></div>
+                        <span class="analytics-bar-value">{{ val }}</span>
+                    </td>
+                    {% else %}
+                    <td><span class="analytics-bar-value">0</span></td>
+                    {% endif %}
+                {% endwith %}
             {% endfor %}
+
           </tr>
         {% endfor %}
         </tbody>
