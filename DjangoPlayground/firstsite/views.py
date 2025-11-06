@@ -497,8 +497,12 @@ def analytics_view(request):
     """
     # read choices from query params
     bucket = (request.GET.get('bucket') or 'daily').lower()
-    raw_actions = (request.GET.get('actions') or 'create,update,delete,send').lower()
-    actions = [a.strip() for a in raw_actions.split(',') if a.strip()]
+    
+
+    actions = request.GET.getlist('actions')
+    if not actions:
+        actions = ['create', 'update', 'delete', 'send']
+
     allowed = {'create', 'update', 'delete', 'send'}
     actions = [a for a in actions if a in allowed] or ['create', 'update', 'delete', 'send']
 
@@ -523,30 +527,36 @@ def analytics_view(request):
         )
 
     # assemble a consistent structure for rendering
-    periods = []
     per_period = {}
     for row in qs:
-        key = row['period'].date().isoformat()
-        per_period.setdefault(key, {a: 0 for a in actions})
-        per_period[key][row['action']] = row['count']
-    periods = sorted(per_period.keys())  # display old->new
+        period_key = row['period'].date().isoformat()
+        per_period.setdefault(period_key, {a: 0 for a in actions})
+        per_period[period_key][row['action']] = row['count']
+
+    periods = sorted(per_period.keys())  
 
     # compute max for bar scaling (avoid div by zero)
-    max_val = 0
-    for key in periods:
-        for a in actions:
-            max_val = max(max_val, per_period[key].get(a, 0))
+    table_rows = []
+    max_val = 1
+    for period in periods:
+        counts = per_period[period]
+        table_rows.append({
+            'period': period,
+            'counts': counts,
+        })
+        for v in counts.values():
+            if v > max_val:
+                max_val = v
 
     ctx = {
         'bucket': bucket,
         'actions': actions,
-        'periods': periods,
-        'per_period': per_period,
-        'max_val': max_val or 1,
-        # for the form UI
         'all_actions': ['create', 'update', 'delete', 'send'],
         'all_buckets': ['daily', 'weekly', 'monthly', 'yearly'],
-    }
+        'table_rows': table_rows,
+        'max_val': max_val,
+        }   
+
     return render(request, 'firstsite/analytics.html', ctx)
 
 # Note Version API endpoint
