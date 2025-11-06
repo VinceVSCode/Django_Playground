@@ -5,7 +5,6 @@
 <div class="card">
   <h2 style="margin-top:0;">Notes Analytics</h2>
 
-  <!-- Filter form (no JS) -->
   <form method="get" class="filter-bar" style="display:flex; gap:1rem; flex-wrap:wrap; align-items:end;">
     <div>
       <label for="bucket"><strong>Bucket</strong></label><br>
@@ -33,51 +32,44 @@
   </form>
 </div>
 
-{% if not periods %}
+{% if not table_rows %}
   <div class="card" style="text-align:center;">
     <p class="muted">No events yet for the chosen filters.</p>
-    <p class="muted">Create, update, delete, or send notes to see analytics.</p>
   </div>
 {% else %}
-  <!-- Simple bar chart (pure CSS/HTML) -->
   <div class="card">
     <h3 style="margin-top:0;">{{ bucket|capfirst }} totals</h3>
-
     <div style="overflow-x:auto;">
-      <table class="table analytics-table" style="width:100%; border-collapse:separate; border-spacing:0 .4rem;">
+      <table class="analytics-table">
         <thead>
           <tr>
-            <th style="text-align:left; padding:.25rem .5rem;">Period</th>
+            <th>Period</th>
             {% for a in actions %}
-              <th style="text-align:left; padding:.25rem .5rem;">{{ a|capfirst }}</th>
+              <th>{{ a|capfirst }}</th>
             {% endfor %}
           </tr>
         </thead>
         <tbody>
-        {% for p in periods %}
-          <tr>
-            <td style="padding:.25rem .5rem; white-space:nowrap;"><strong>{{ p }}</strong></td>
-            {% for a in actions %}
-                {% with val=per_period.p.a %}
-                    {% if val > 0 %}
-                    {% widthratio val max_val 240 as bar_width %}
+          {% for row in table_rows %}
+            <tr>
+              <td><strong>{{ row.period }}</strong></td>
+              {% for a in actions %}
+                {% with val=row.counts.a %}
+                  {% if val %}
                     <td>
                       <div class="analytics-bar"style="width: calc(240px * {{ val }} / {{ max_val }});"></div>
                       <span class="analytics-bar-value">{{ val }}</span>
                     </td>
-                    {% else %}
+                  {% else %}
                     <td><span class="analytics-bar-value">0</span></td>
-                    {% endif %}
+                  {% endif %}
                 {% endwith %}
-            {% endfor %}
-
-          </tr>
-        {% endfor %}
+              {% endfor %}
+            </tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>
-
-    <p class="muted" style="margin-top:.5rem;">Bars are relative within this view (not absolute units).</p>
   </div>
 {% endif %}
 {% endblock %}
