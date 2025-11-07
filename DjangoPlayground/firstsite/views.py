@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 
-from .utils import attach_actor
+from .utils import attach_actor, log_note_event
 from .models import Note, NoteVersion, Tag, NoteSend, NoteEvent
 from .forms import NoteForm, TagForm, SendNoteForm
 from django.contrib.auth.decorators import login_required
@@ -242,6 +242,10 @@ def note_update_view(request, pk):
             )
             attach_actor(note, request.user)
             form.save()  # saves fields + m2m
+
+            # update event log
+            log_note_event(request.user, note, NoteEvent.ACTION_UPDATE)
+
             messages.success(request, "Note updated successfully!")
             return redirect("note_detail", pk=note.pk)
     else:
@@ -258,8 +262,11 @@ def note_delete_view(request, pk):
     note = get_object_or_404(Note, pk=pk, owner=request.user)
     if request.method == "POST":
         attach_actor(note, request.user)
+        # delete first or log first? let's delete first. (don't know if it matters)
         note.delete()
+        log_note_event(request.user, note, NoteEvent.ACTION_DELETE)
         messages.success(request, "Note deleted successfully.")
+
         return redirect("note_lists")
     return render(request, "firstsite/confirm_delete.html", {"note": note})
 
@@ -360,7 +367,7 @@ def note_send_view(request, pk):
 
             # Log send action
             NoteSend.objects.create(original_note=note, sender=request.user, recipient=recipient)
-            NoteEvent.objects.create(user =request.user, note=note, action = NoteEvent.ACTION_SEND)
+            log_note_event(request.user, note, NoteEvent.ACTION_SEND)
 
             messages.success(request, f"Note sent to {recipient.username}.")
             return redirect("note_detail", pk=note.pk)
@@ -474,6 +481,7 @@ def api_note_detail(request, pk):
         if serializer.is_valid():
             attach_actor(note, request.user)
             serializer.save()
+            log_note_event(request.user, note, NoteEvent.ACTION_UPDATE)
 
             # update tags
             tags = request.data.get('tags', [])
@@ -486,6 +494,9 @@ def api_note_detail(request, pk):
         # Delete the note
         attach_actor(note, request.user)
         note.delete()
+        
+        # Same here as above, log delete event
+        log_note_event(request.user, None, NoteEvent.ACTION_DELETE)
         return Response(status=204)
 
 # --- Analytics HTML page (server-rendered) ---
@@ -499,7 +510,7 @@ def analytics_view(request):
     bucket = (request.GET.get('bucket') or 'daily').lower()
     
 
-    actions = request.GET.getlist('actions')
+    actions = request.GET.getlist('actions') # multiple checkboxes functionality
     if not actions:
         actions = ['create', 'update', 'delete', 'send']
 
@@ -535,18 +546,20 @@ def analytics_view(request):
 
     periods = sorted(per_period.keys())  
 
-    # compute max for bar scaling (avoid div by zero)
+    # build rows: [{period: "...", counts: {action: count}} ...]
     table_rows = []
     max_val = 1
-    for period in periods:
-        counts = per_period[period]
+    for period_key in periods:
+        counts_for_period = []
+        for a in actions:
+            val = per_period[period_key].get(a, 0)
+            counts_for_period.append(val)
+            if val > max_val:
+                max_val = val
         table_rows.append({
-            'period': period,
-            'counts': counts,
+            'period': period_key,
+            'counts': counts_for_period,  # aligned with actions
         })
-        for v in counts.values():
-            if v > max_val:
-                max_val = v
 
     ctx = {
         'bucket': bucket,
@@ -716,7 +729,9 @@ def api_note_send(request,pk):
 
     # Log send action
     NoteSend.objects.create(original_note=note, sender=request.user, recipient=recipient)
-    NoteEvent.objects.create(user =request.user, note=note, action = NoteEvent.ACTION_SEND)
+
+    log_note_event(request.user, note, NoteEvent.ACTION_SEND)
+    
     # Return success response
     return Response({'detail': f'Sent to {recipient.username}.'}, status=201)
 

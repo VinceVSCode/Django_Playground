@@ -41,34 +41,33 @@
     <h3 style="margin-top:0;">{{ bucket|capfirst }} totals</h3>
     <div style="overflow-x:auto;">
       <table class="analytics-table">
-        <thead>
-          <tr>
-            <th>Period</th>
-            {% for a in actions %}
-              <th>{{ a|capfirst }}</th>
-            {% endfor %}
-          </tr>
-        </thead>
-        <tbody>
-          {% for row in table_rows %}
-            <tr>
-              <td><strong>{{ row.period }}</strong></td>
-              {% for a in actions %}
-                {% with val=row.counts.a %}
-                  {% if val %}
-                    <td>
-                      <div class="analytics-bar"style="width: calc(240px * {{ val }} / {{ max_val }});"></div>
-                      <span class="analytics-bar-value">{{ val }}</span>
-                    </td>
-                  {% else %}
-                    <td><span class="analytics-bar-value">0</span></td>
-                  {% endif %}
-                {% endwith %}
-              {% endfor %}
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+  <thead>
+    <tr>
+      <th>Period</th>
+      {% for a in actions %}
+        <th>{{ a|capfirst }}</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in table_rows %}
+      <tr>
+        <td><strong>{{ row.period }}</strong></td>
+        {% for val in row.counts %}
+          {% if val %}
+            <td>
+              <div class="analytics-bar" style="width: calc(240px * {{ val }} / {{ max_val }});"></div>
+              <span class="analytics-bar-value">{{ val }}</span>
+            </td>
+          {% else %}
+            <td><span class="analytics-bar-value">0</span></td>
+          {% endif %}
+        {% endfor %}
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
     </div>
   </div>
 {% endif %}
