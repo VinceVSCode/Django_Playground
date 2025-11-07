@@ -3,6 +3,7 @@ from django.dispatch import receiver
 from django.contrib.auth.models import AnonymousUser
 from .middleware import get_current_user
 from .models import Note, NoteEvent
+from .utils import log_note_event
 import logging
 
 log = logging.getLogger(__name__)
@@ -20,12 +21,10 @@ def log_note_save(sender, instance: Note, created,**kwargs):
     actor =  _actor_for(instance)
     log.warning("post_save Note: created=%s, actor=%r, note_id=%s", created, getattr(actor,'username',None), instance.pk)
 
-    if not actor:
-        return NoteEvent.objects.create(
-            user =  actor,
-            note=  instance,
-            action = NoteEvent.ACTION_CREATE if created else NoteEvent.ACTION_UPDATE
-        )
+    if created:
+        log_note_event(actor, instance, NoteEvent.ACTION_CREATE)
+    else:
+        log_note_event(actor, instance, NoteEvent.ACTION_UPDATE)
     
 @receiver(post_delete, sender=Note)
 def log_note_delete(sender, instance: Note, **kwargs):
@@ -33,9 +32,7 @@ def log_note_delete(sender, instance: Note, **kwargs):
     log.warning("post_delete Note: actor=%r, note_id=%s", getattr(actor,'username',None), instance.pk)
     
     if not actor:
-        return NoteEvent.objects.create(
-            user =  actor,
-            note=  None, # Note is deleted, but we keep event record.
-            action = NoteEvent.ACTION_DELETE
-        )
+        return
+    # note is gone, so pass None. Maybe we can store note data in NoteEvent in future.
+    log_note_event(actor, None, NoteEvent.ACTION_DELETE)
         
