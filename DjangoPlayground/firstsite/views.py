@@ -240,7 +240,8 @@ def note_update_view(request, pk):
                 content=note.content,
                 updated_by=request.user,
             )
-            attach_actor(note, request.user)
+            # signal who made the change
+            attach_actor(note, user=request.user)
             form.save()  # saves fields + m2m
 
             # update event log
@@ -264,7 +265,7 @@ def note_delete_view(request, pk):
         attach_actor(note, request.user)
         # delete first or log first? let's delete first. (don't know if it matters)
         note.delete()
-        log_note_event(request.user, note, NoteEvent.ACTION_DELETE)
+        log_note_event(request.user, None, NoteEvent.ACTION_DELETE)
         messages.success(request, "Note deleted successfully.")
 
         return redirect("note_lists")
