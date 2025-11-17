@@ -184,6 +184,7 @@ def create_note(request):
     if request.method == "POST":
         form = NoteForm(request.POST, user=request.user)  # Pass the user to the form
         if form.is_valid():
+            
             note = form.save(commit=False)
             note.owner = request.user
             attach_actor(note, request.user)
@@ -213,6 +214,8 @@ def edit_note (request, pk):
                 content=note.content,
                 updated_by=request.user,
             )
+            # signal who made the change
+            attach_actor(note, user=request.user)
             
             form.save()  # saves fields + m2m
             return redirect("note_detail", pk=note.pk)

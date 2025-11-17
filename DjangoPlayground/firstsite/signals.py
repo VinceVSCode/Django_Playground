@@ -12,14 +12,15 @@ log = logging.getLogger(__name__)
 
 
 def _actor_for(instance):
-    # Prefer the explicitly set _actor on the instance (from the view), else use the current user from middleware.
-    user = getattr(instance, '_actor', None) or get_current_user()
-    return None if isinstance(user, AnonymousUser) else user
+    # Try to get the actor from the instance, else from middleware
+    return getattr(instance, '_actor', None) or get_current_user()
 
 @receiver(post_save, sender=Note)
 def log_note_save(sender, instance: Note, created,**kwargs):
     actor =  _actor_for(instance)
     log.warning("post_save Note: created=%s, actor=%r, note_id=%s", created, getattr(actor,'username',None), instance.pk)
+    if not actor:
+        return
 
     if created:
         log_note_event(actor, instance, NoteEvent.ACTION_CREATE)
