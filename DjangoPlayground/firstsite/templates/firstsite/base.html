@@ -9,6 +9,10 @@
 <body>
   <header class="brandbar">
     <div class="brand">DjangoPlayground</div>
+    <!-- Print the name of the user-->
+    {% if request.user.is_authenticated %}
+      <div class="user-info">Logged in as {{ request.user.username }}</div>
+    {% endif %}
     <nav class="topbar" aria-label="Main navigation">
       
       
