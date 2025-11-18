@@ -70,7 +70,7 @@ def note_lists_view(request):
 
     # Tag filtering (exclusive with untagged)
     if tag_id:
-        notes = notes.filter(tags__id=tag_id,tags_owner=request.user)
+        notes = notes.filter(tags__id=tag_id,tags__owner=request.user)
     elif untagged:
         notes = notes.filter(tags__isnull=True)
 
@@ -248,7 +248,7 @@ def note_update_view(request, pk):
             form.save()  # saves fields + m2m
 
             # update event log
-            log_note_event(request.user, note, NoteEvent.ACTION_UPDATE)
+            #log_note_event(request.user, note, NoteEvent.ACTION_UPDATE)
 
             messages.success(request, "Note updated successfully!")
             return redirect("note_detail", pk=note.pk)
@@ -268,7 +268,7 @@ def note_delete_view(request, pk):
         attach_actor(note, request.user)
         # delete first or log first? let's delete first. (don't know if it matters)
         note.delete()
-        log_note_event(request.user, None, NoteEvent.ACTION_DELETE)
+        #log_note_event(request.user, None, NoteEvent.ACTION_DELETE)
         messages.success(request, "Note deleted successfully.")
 
         return redirect("note_lists")
@@ -325,7 +325,6 @@ def tag_update_view(request, pk):
         form = TagForm(request.POST, instance=tag, user=request.user)
         if form.is_valid():
             note = get_object_or_404(Note, pk=pk, owner=request.user)
-            attach_actor(note, request.user)
             form.save()
             messages.success(request, "Tag renamed.")
             return redirect('tag_list')
@@ -365,13 +364,13 @@ def note_send_view(request, pk):
                 is_archived = False,
             )
             # Copy tags if any
-            attach_actor(note, request.user)
+            attach_actor(copy, request.user)
             copy.save()
             copy.tags.set(note.tags.all())
 
             # Log send action
             NoteSend.objects.create(original_note=note, sender=request.user, recipient=recipient)
-            log_note_event(request.user, note, NoteEvent.ACTION_SEND)
+           #log_note_event(request.user, note, NoteEvent.ACTION_SEND)
 
             messages.success(request, f"Note sent to {recipient.username}.")
             return redirect("note_detail", pk=note.pk)
@@ -444,8 +443,10 @@ def api_user_notes(request):
         serializer = NoteSerializer(data=request.data)
         if serializer.is_valid():
             # Save the note with the authenticated user as the owner
-            note = serializer.save(owner=request.user)
+            note =  Note(owner =  request.user, **serializer.validated_data)
             attach_actor(note, request.user)
+            note.save()
+            
             #Attach tags (if any)
             tags = request.data.get('tags', [])
             if tags:
@@ -485,7 +486,7 @@ def api_note_detail(request, pk):
         if serializer.is_valid():
             attach_actor(note, request.user)
             serializer.save()
-            log_note_event(request.user, note, NoteEvent.ACTION_UPDATE)
+            #log_note_event(request.user, note, NoteEvent.ACTION_UPDATE)
 
             # update tags
             tags = request.data.get('tags', [])
@@ -500,7 +501,8 @@ def api_note_detail(request, pk):
         note.delete()
         
         # Same here as above, log delete event
-        log_note_event(request.user, None, NoteEvent.ACTION_DELETE)
+        #log_note_event(request.user, None, NoteEvent.ACTION_DELETE)
+
         return Response(status=204)
 
 # --- Analytics HTML page (server-rendered) ---
@@ -726,7 +728,7 @@ def api_note_send(request,pk):
         is_pinned = False,
         is_archived = False,
     )
-    attach_actor(copy, request.user)  # sender credited for create
+    attach_actor(copy, request.user)  
     copy.save()
     # Copy tags if any
     copy.tags.set(note.tags.all())
@@ -734,7 +736,7 @@ def api_note_send(request,pk):
     # Log send action
     NoteSend.objects.create(original_note=note, sender=request.user, recipient=recipient)
 
-    log_note_event(request.user, note, NoteEvent.ACTION_SEND)
+    #log_note_event(request.user, note, NoteEvent.ACTION_SEND)
     
     # Return success response
     return Response({'detail': f'Sent to {recipient.username}.'}, status=201)
