@@ -11,13 +11,22 @@ def attach_actor(instance: Any, user: Any) -> None:
 
 def log_note_event(user: Any, note: Any, action: str) -> NoteEvent | None:
     """
-    Central function that creates analytics/audit events.
-    - user: the acting user (ignored if None/Anonymous)
-    - note: the related Note instance or None (for deletes)
-    - action: one of NoteEvent.ACTION_*
+    Central function that audit events.
+    - Stores FKs (user/note) but also denormalized snapshots (actor_username, note_title)
+      so analytics survive deletions/renames.
     """
-
+    username =  None
     if user and not isinstance(user, AnonymousUser):
-        return NoteEvent.objects.create(user=user,note=note,action=action)
+        username =  getattr(user, 'username', None)
+
+    title = None
+    if note is not None:
+        title = getattr(note, 'title', None)
     
-    return None
+    return NoteEvent.objects.create(
+        user=user if username else None,
+        note=note if note else None,
+        actor_username=username,
+        note_title=title,
+        action=action,
+    )

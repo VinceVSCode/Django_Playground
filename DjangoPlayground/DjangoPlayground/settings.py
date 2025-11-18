@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'firstsite',  # Ensure this matches the name of my app folder
     'rest_framework',
     'rest_framework.authtoken',  # Enable token authentication
+
 ]
 
 MIDDLEWARE = [

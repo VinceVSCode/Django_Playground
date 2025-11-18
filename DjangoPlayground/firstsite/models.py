@@ -45,11 +45,12 @@ class NoteVersion(models.Model):
 class NoteSend (models.Model):
     """
     Log that a note was sent (copy) from one user to another.
+    Used for analytics and tracking.
     """
-    original_note = models.ForeignKey(Note, on_delete=models.CASCADE, related_name='sends')
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notes_sent')
-    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notes_received')
-    created_at = models.DateTimeField(auto_now_add=True)
+    original_note = models.ForeignKey(Note, on_delete=models.SET_NULL, null=True, blank=True, related_name='sends')
+    sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='notes_sent')
+    recipient = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='notes_received')
+    created_at = models.DateTimeField(auto_now_add=True,db_index=True)
 
     def __str__(self):
         return f"{self.sender} -> {self.recipient}: ({self.original_note_id})"
@@ -69,11 +70,19 @@ class NoteEvent(models.Model):
         (ACTION_DELETE, 'Delete'),
         (ACTION_SEND, 'Send'),
     ]
+    
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
+    note = models.ForeignKey('Note', on_delete=models.SET_NULL, null=True, blank=True, db_index=True)
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    note = models.ForeignKey('Note', on_delete=models.CASCADE, null=True, blank=True)
-    action = models.CharField(max_length=10, choices=ACTION_CHOICES)
-    created_at = models.DateTimeField(auto_now_add=True)
+    # Snapshots for presentation purposes
+    actor_username = models.CharField(max_length=150, null=True, blank=True)
+    note_title     = models.CharField(max_length=255, null=True, blank=True)
+
+    action = models.CharField(max_length=10, choices=ACTION_CHOICES,db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True,db_index=True)
 
     def __str__(self):
-        return f"{self.user} {self.action} {self.note_id} @ {self.created_at:%Y-%m-%d %H:%M}"
+        # Format: "actor action note @ timestamp", preserving info if user or note is deleted
+        who  = self.actor_username or (self.user.username if self.user_id else "unknown")
+        what = self.note_title or (getattr(self.note, "title", None) or "note")
+        return f"{who} {self.action} {what} @ {self.created_at:%Y-%m-%d %H:%M}"
