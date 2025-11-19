@@ -24,9 +24,11 @@ html, body { background: var(--bg); color: var(--text); }
   backdrop-filter: blur(6px);
   border-bottom: 1px solid var(--line);
 }
-.topbar__left{ display:flex; align-items:center; gap:.75rem; }
-.topbar__right{ display:flex; align-items:center; gap:.75rem; }
+.topbar { flex-wrap: nowrap; }
 .topbar__nav{ display:flex; gap:.5rem; }
+.inline { display: inline-flex; align-items: center; }          /* used by the logout <form> */
+.topbar__right { display: flex; align-items: center; gap: .75rem; }
+
 .topbar__link{
   padding:.4rem .6rem; border-radius:.5rem;
   color: var(--text); text-decoration: none;
@@ -76,7 +78,30 @@ html, body { background: var(--bg); color: var(--text); }
 .filter-actions{ display:flex; gap:.5rem; }
 
 
-/* Chips for selected tags/filters (no JS; just visual) */
+/* Notes grid + card styles */
+.notes-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: .9rem;
+}
+
+.note-card{
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: .8rem;
+  padding: .75rem .9rem;
+  box-shadow: 0 8px 18px rgba(0,0,0,.22);
+}
+
+.note-card__title{ margin:.1rem 0 .4rem; font-weight:600; }
+.note-card__meta{ display:flex; gap:.6rem; flex-wrap:wrap; color: var(--muted); font-size:.85rem; }
+
+.note-pin{
+  display:inline-block; font-size:.75rem; line-height:1;
+  padding:.15rem .45rem; border-radius:.4rem;
+  background: #232a36; border:1px solid #2e3542; color: var(--muted);
+}
+
 .chips{ display:flex; gap:.4rem; flex-wrap:wrap; }
 .chip{
   background: var(--chip); border:1px solid var(--chip-line);

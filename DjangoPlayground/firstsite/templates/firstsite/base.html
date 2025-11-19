@@ -24,7 +24,7 @@
     <div class="topbar__right">
       {% if request.user.is_authenticated %}
         <span class="topbar__user">Logged in as {{ request.user.username }}</span>
-        <form action="{% url 'logout' %}" method="post" class="inline" style="margin:0;">
+        <form action="{% url 'logout' %}" method="post" class="inline" >
           {% csrf_token %}
           <button class="button" type="submit">Logout</button>
         </form>
