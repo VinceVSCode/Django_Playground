@@ -88,45 +88,49 @@
 {% endif %}
 
 {% if page_obj.object_list %}
-  <ul>
+<div class="notes-grid">
     {% for note in page_obj.object_list %}
-        <div style="margin-top:.5rem">
-      <a class="button" href="{% url 'note_detail' note.pk %}">View</a>
-      <a class="button" href="{% url 'note_edit' note.pk %}">Edit</a>
-      <a class="button" href="{% url 'note_delete' note.pk %}">Delete</a>
+      <article class="note-card">
+        <div class="note-card__meta">
+          {% if note.is_pinned %}<span class="note-pin">Pinned</span>{% endif %}
+          {% if note.is_archived %}<span class="note-pin">Archived</span>{% endif %}
+          <span>Updated {{ note.updated_at|date:"Y-m-d H:i" }}</span>
+        </div>
 
-      <form action="{% url 'note_toggle_pin' note.pk %}" method="post" class="inline">
-        {% csrf_token %}
-        <input type="hidden" name="next" value="{{ request.get_full_path }}">
-        <button class="button" type="submit">{% if note.is_pinned %}Unpin{% else %}Pin{% endif %}</button>
-      </form>
+        <h3 class="note-card__title">
+          <a href="{% url 'note_detail' note.pk %}" class="topbar__link">{{ note.title }}</a>
+        </h3>
 
-      <form action="{% url 'note_toggle_archive' note.pk %}" method="post" class="inline">
-        {% csrf_token %}
-        <input type="hidden" name="next" value="{{ request.get_full_path }}">
-        <button class="button" type="submit">{% if note.is_archived %}Restore{% else %}Archive{% endif %}</button>
-      </form>
-    </div>
-
-      <li class="card">
-        <strong>
-          <a href="{% url 'note_detail' note.pk %}">{{ note.title }}</a>
-        </strong>
-        {% if note.is_pinned %}<em> (Pinned)</em>{% endif %}
-        {% if note.is_archived %}<em> (Archived)</em>{% endif %}
         <div class="muted">{{ note.content|truncatechars:120 }}</div>
+
         {% if note.tags.exists %}
-          <div>
-            <small>Tags:
-              {% for tag in note.tags.all %}
-                <span class="tagpill">{{ tag.name }}</span>
-              {% endfor %}
-            </small>
+          <div class="chips" style="margin-top:.4rem;">
+            {% for tag in note.tags.all %}
+              <span class="chip">{{ tag.name }}</span>
+            {% endfor %}
           </div>
         {% endif %}
-      </li>
+
+        <div style="margin-top:.6rem; display:flex; gap:.4rem; flex-wrap:wrap;">
+          <a class="button" href="{% url 'note_detail' note.pk %}">View</a>
+          <a class="button" href="{% url 'note_edit' note.pk %}">Edit</a>
+          <a class="button" href="{% url 'note_delete' note.pk %}">Delete</a>
+
+          <form action="{% url 'note_toggle_pin' note.pk %}" method="post" class="inline">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button class="button" type="submit">{% if note.is_pinned %}Unpin{% else %}Pin{% endif %}</button>
+          </form>
+
+          <form action="{% url 'note_toggle_archive' note.pk %}" method="post" class="inline">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button class="button" type="submit">{% if note.is_archived %}Restore{% else %}Archive{% endif %}</button>
+          </form>
+        </div>
+      </article>
     {% endfor %}
-  </ul>
+  </div>
 
   {# --- numbered pager goes here (next step) --- #}
 {% if page_obj.paginator.num_pages > 1 %}
