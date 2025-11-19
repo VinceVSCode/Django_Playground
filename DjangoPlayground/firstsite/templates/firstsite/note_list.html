@@ -2,79 +2,83 @@
 {% block title %}Your Notes{% endblock %}
 
 {% block content %}
-<h1>Your Notes</h1>
+  <div class="card" style="margin-bottom:1rem;">
+    <h1 style="margin:0;">Your Notes</h1>
+    <p class="muted" style="margin:.25rem 0 0;">View, filter, and manage your notes.</p>
+  </div>
+<div class="filter-bar">
+  <form method="get" style="display:flex; gap:1rem; flex-wrap:wrap; align-items:end; width:100%;">
+    <input type="text" name="search" placeholder="Search…" value="{{ values.search|default:'' }}" />
 
-<form method="get" style="margin-bottom:1rem">
-  <input type="text" name="search" placeholder="Search…" value="{{ values.search|default:'' }}" />
-
-  <select name="tag">
-    <option value="">— All tags —</option>
-    {% for t in tags %}
-      <option value="{{ t.id }}" {% if values.tag == t.id|stringformat:"s" %}selected{% endif %}>{{ t.name }}</option>
-    {% endfor %}
-  </select>
-
-  <label>
-    <input type="checkbox" name="untagged" value="1" {% if values.untagged == '1' %}checked{% endif %}/>
-    Untagged only
-  </label>
-
-  <label>
-    Pinned:
-    <select name="pinned">
-      <option value="">All</option>
-      <option value="1" {% if values.pinned == '1' %}selected{% endif %}>Yes</option>
-      <option value="0" {% if values.pinned == '0' %}selected{% endif %}>No</option>
+    <select name="tag">
+      <option value="">— All tags —</option>
+      {% for t in tags %}
+        <option value="{{ t.id }}" {% if values.tag == t.id|stringformat:"s" %}selected{% endif %}>{{ t.name }}</option>
+      {% endfor %}
     </select>
-  </label>
 
-  <label>
-    Archived:
-    <select name="archived">
-      <option value="">All</option>
-      <option value="0" {% if values.archived == '0' %}selected{% endif %}>No</option>
-      <option value="1" {% if values.archived == '1' %}selected{% endif %}>Yes</option>
-    </select>
-  </label>
-  <label>
-    Date field:
-    <select name="date_field">
-      <option value="updated" {% if values.date_field == 'updated' or not values.date_field %}selected{% endif %}>Updated</option>
-      <option value="created" {% if values.date_field == 'created' %}selected{% endif %}>Created</option>
-    </select>
-  </label>
+    <label>
+      <input type="checkbox" name="untagged" value="1" {% if values.untagged == '1' %}checked{% endif %}/>
+      Untagged only
+    </label>
 
-  <label>
-    From:
-    <input type="date" name="from" value="{{ values.from|default:'' }}">
-  </label>
+    <label>
+      Pinned:
+      <select name="pinned">
+        <option value="">All</option>
+        <option value="1" {% if values.pinned == '1' %}selected{% endif %}>Yes</option>
+        <option value="0" {% if values.pinned == '0' %}selected{% endif %}>No</option>
+      </select>
+    </label>
 
-  <label>
-    To:
-    <input type="date" name="to" value="{{ values.to|default:'' }}">
-  </label>
+    <label>
+      Archived:
+      <select name="archived">
+        <option value="">All</option>
+        <option value="0" {% if values.archived == '0' %}selected{% endif %}>No</option>
+        <option value="1" {% if values.archived == '1' %}selected{% endif %}>Yes</option>
+      </select>
+    </label>
+    <label>
+      Date field:
+      <select name="date_field">
+        <option value="updated" {% if values.date_field == 'updated' or not values.date_field %}selected{% endif %}>Updated</option>
+        <option value="created" {% if values.date_field == 'created' %}selected{% endif %}>Created</option>
+      </select>
+    </label>
 
-  <label>
-    Sort by:
-    <select name="sort">
-      <option value="updated" {% if values.sort == 'updated' or not values.sort %}selected{% endif %}>Updated</option>
-      <option value="created" {% if values.sort == 'created' %}selected{% endif %}>Created</option>
-      <option value="title"   {% if values.sort == 'title' %}selected{% endif %}>Title</option>
-    </select>
-  </label>
+    <label>
+      From:
+      <input type="date" name="from" value="{{ values.from|default:'' }}">
+    </label>
 
-  <label>
-    Direction:
-    <select name="dir">
-      <option value="desc" {% if values.dir == 'desc' or not values.dir %}selected{% endif %}>Desc</option>
-      <option value="asc"  {% if values.dir == 'asc' %}selected{% endif %}>Asc</option>
-    </select>
-  </label>
+    <label>
+      To:
+      <input type="date" name="to" value="{{ values.to|default:'' }}">
+    </label>
+
+    <label>
+      Sort by:
+      <select name="sort">
+        <option value="updated" {% if values.sort == 'updated' or not values.sort %}selected{% endif %}>Updated</option>
+        <option value="created" {% if values.sort == 'created' %}selected{% endif %}>Created</option>
+        <option value="title"   {% if values.sort == 'title' %}selected{% endif %}>Title</option>
+      </select>
+    </label>
+
+    <label>
+      Direction:
+      <select name="dir">
+        <option value="desc" {% if values.dir == 'desc' or not values.dir %}selected{% endif %}>Desc</option>
+        <option value="asc"  {% if values.dir == 'asc' %}selected{% endif %}>Asc</option>
+      </select>
+    </label>
 
 
-  <button type="submit">Apply</button>
-  <a href="{% url 'note_lists' %}">Reset</a>
-</form>
+    <button type="submit">Apply</button>
+    <a href="{% url 'note_lists' %}">Reset</a>
+  </form>
+</div>
 
 {% if not page_obj.object_list %}
   <div class="card" style="text-align:center;">

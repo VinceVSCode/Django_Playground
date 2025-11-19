@@ -7,6 +7,8 @@
   --muted: #a6afbd;        /* muted text */
   --line: #2b3140;         /* separators */
   --focus: #8fb7ff;        /* focus ring */
+  --chip: #212633;
+  --chip-line: #2e3542;
 }
 
 html, body { background: var(--bg); color: var(--text); }
@@ -15,7 +17,8 @@ html, body { background: var(--bg); color: var(--text); }
 /* topbar */
 .topbar{
   position: sticky; top: 0; z-index: 10;
-  display: flex; justify-content: space-between; align-items: center;
+  display: flex; justify-content: space-between;
+  align-items: center;
   gap: 1rem; padding: .75rem 1rem;
   background: rgba(23,26,33,.85);
   backdrop-filter: blur(6px);
