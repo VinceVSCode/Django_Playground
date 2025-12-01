@@ -77,51 +77,71 @@ html, body { background: var(--bg); color: var(--text); }
 .filter-bar label{ color: var(--muted); font-size:.9rem; }
 .filter-actions{ display:flex; gap:.5rem; }
 
-
-/* Notes grid + card styles */
+/* ===== Notes grid ===== */
 .notes-grid{
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: .9rem;
+  gap: 1.1rem;
 }
-
+/* Notes grid + card styles */
+/* clearer card boundary + very subtle gradient for depth */
 .note-card{
-  background: var(--panel);
+  background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(0,0,0,0.02)) var(--panel);
   border: 1px solid var(--line);
-  border-radius: .8rem;
-  padding: .75rem .9rem;
-  box-shadow: 0 8px 18px rgba(0,0,0,.22);
+  border-radius: 12px;                 /* slightly rounder */
+  padding: .85rem 1rem;
+  box-shadow: 0 10px 20px rgba(0,0,0,.28); /* a bit stronger */
+  transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease;
 }
 
-.note-card__title{ margin:.1rem 0 .4rem; font-weight:600; }
-.note-card__meta{ display:flex; gap:.6rem; flex-wrap:wrap; color: var(--muted); font-size:.85rem; }
+/* subtle zebra striping so adjacent cards read as separate */
+.notes-grid > article:nth-child(odd){
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.03)) var(--panel-strong);
+}
 
+/* gentle lift on hover/focus to signal separation */
+.note-card:hover,
+.note-card:focus-within{
+  transform: translateY(-2px);
+  border-color: #3a4253;              /* slightly brighter edge */
+  box-shadow: 0 14px 28px rgba(0,0,0,.35);
+}
+
+/* clearer title hierarchy */
+.note-card__title{
+  margin: .2rem 0 .5rem;
+  font-weight: 650;
+  font-size: 1.05rem;
+}
+
+/* make the link inside cards look like a title, not a nav chip */
+.note-card .topbar__link{
+  padding: 0;                          /* remove nav padding */
+  border-radius: 0;
+  text-decoration: none;
+}
+.note-card .topbar__link:hover{
+  text-decoration: underline;
+  background: transparent;             /* no hover block in cards */
+}
+
+/* meta row spacing */
+.note-card__meta{
+  margin-bottom: .25rem;
+}
+
+/* pin/archive badges: slightly higher contrast so they read quickly */
 .note-pin{
-  display:inline-block; font-size:.75rem; line-height:1;
-  padding:.15rem .45rem; border-radius:.4rem;
-  background: #232a36; border:1px solid #2e3542; color: var(--muted);
+  background: #262e3d;
+  border-color: #394357;
+  color: #b8c1d1;
 }
 
-.chips{ display:flex; gap:.4rem; flex-wrap:wrap; }
+/* tag chips slightly tighter so groups don’t blur together */
+.chips{ gap: .35rem; }
 .chip{
-  background: var(--chip); border:1px solid var(--chip-line);
-  color: var(--text); border-radius: 999px; padding:.2rem .6rem; font-size:.85rem;
-}
-
-/* ===== Note cards ===== */
-.note-card{
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: .8rem;
-  padding: .75rem .9rem;
-  box-shadow: 0 8px 18px rgba(0,0,0,.22);
-}
-.note-card__title { margin:.1rem 0 .4rem; font-weight:600; }
-.note-card__meta { display:flex; gap:.6rem; flex-wrap:wrap; color: var(--muted); font-size:.85rem; }
-.note-pin{
-  display:inline-block; font-size:.75rem; line-height:1;
-  padding:.15rem .45rem; border-radius:.4rem;
-  background: #232a36; border:1px solid var(--chip-line); color: var(--muted);
+  padding: .18rem .55rem;
+  font-size: .84rem;
+  background: var(--chip);
+  border: 1px solid var(--chip-line);
 }
 
 /* ===== Tables (analytics) ===== */
@@ -132,3 +152,54 @@ html, body { background: var(--bg); color: var(--text); }
   background: #1f2a3c; border:1px solid var(--chip-line); border-radius:6px; vertical-align:middle;
 }
 .analytics-bar-value{ margin-left:.4rem; font-size:.9em; color: var(--muted); }
+
+/* === Light theme overrides (activated when <html data-theme="light">) === */
+:root[data-theme="light"]{
+  --bg: #f6f7fb;
+  --panel: #ffffff;
+  --panel-strong: #f1f3f8;
+  --text: #1b2430;
+  --muted: #5b6472;
+  --line: #d8deea;
+  --focus: #2b6fff;
+
+  --chip: #eef2fb;
+  --chip-line: #d7e1f7;
+}
+
+/* Topbar background should be subtle in light mode */
+:root[data-theme="light"] .topbar{
+  background: rgba(255,255,255,.9);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(6px);
+}
+
+/* Buttons in light mode (slightly darker text on light bg) */
+:root[data-theme="light"] .button{
+  background: var(--panel-strong);
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+
+/* Cards in light mode */
+:root[data-theme="light"] .card{
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+/* Note cards in light mode */
+:root[data-theme="light"] .note-card{
+  background: linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.01)) var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 20px rgba(0,0,0,.07);
+}
+:root[data-theme="light"] .notes-grid > article:nth-child(odd){
+  background: linear-gradient(180deg, rgba(0,0,0,0.03), rgba(0,0,0,0.015)) var(--panel-strong);
+}
+
+/* Links inside cards should not look like nav chips */
+:root[data-theme="light"] .note-card .topbar__link:hover{
+  text-decoration: underline;
+  background: transparent;
+}
+
