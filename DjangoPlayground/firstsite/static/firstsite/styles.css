@@ -13,6 +13,8 @@
 
 html, body { background: var(--bg); color: var(--text); }
 
+
+
 /* ===== Topbar ===== */
 /* topbar */
 .topbar{
@@ -43,6 +45,10 @@ html, body { background: var(--bg); color: var(--text); }
   background: var(--panel-strong);
   border: 1px dashed var(--line);
 }
+
+/* button with inline icon */
+.button--icon { display:inline-flex; align-items:center; gap:.4rem; }
+.button--icon svg { display:inline-block; width:16px; height:16px; }
 
 /* ===== Page/content wrappers ===== */
 .page{ padding: 1rem; }
