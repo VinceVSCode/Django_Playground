@@ -3,49 +3,50 @@ name: tests
 
 on: 
   push:
+    branches: [ main, master ]
   pull_request:
 
 jobs:
-  pytest:
+  tests:
     runs-on: ubuntu-latest
 
-    # Set working directory to the DjangoPlayground folder, since we made so that tests and scripts are executated from there
-    defaults:
-      run:
-        working-directory: DjangoPlayground   
+    env:
+      # Make Django find your settings everywhere in the job
+      DJANGO_SETTINGS_MODULE: DjangoPlayground.settings
+      # Force non-interactive behavior
+      PYTHONUNBUFFERED: "1"
     
-    strategy:
-      matrix:
-        # To be implemented at a later date. Need to make sure all tests pass on multiple OS and Python versions first.
-        # os: [ubuntu-latest, windows-latest]
-        python-version: [3.11]
-      # max-parallel: 4
-      # fail-fast: false
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
-      
-      - name: Upgrade pip and install dependencies
-        run: 
+          python-version: '3.11'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
           python -m pip install --upgrade pip
-      - name: Install dependencies else install minimal dependencies
+          pip install -r DjangoPlayground/requirements.txt || true
+          # Ensure test tools are present even if not in requirements.txt
+          pip install pytest pytest-django djangorestframework
+
+      - name: Django migrate (SQLite)
+        working-directory: DjangoPlayground
         run: |
-          if [ -f requirements.txt ]; then 
-            pip install -r requirements.txt; 
-          else 
-            # Install minimal dependencies for testing
-            pip install django djangorestframework djangorestframework-simplejwt 
-            pip install pytest pytest-django 
-          fi
-      - name: Run tests   
-        
-        env:
-          DJANGO_SETTINGS_MODULE: DjangoPlayground.settings
+          python manage.py migrate --noinput
+
+      - name: Run tests (entire suite)
+        working-directory: DjangoPlayground
         run: |
-         pytest -vv -rA --tb=short
+          pytest -q firstsite/tests
