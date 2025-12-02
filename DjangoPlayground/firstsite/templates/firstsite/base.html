@@ -61,7 +61,7 @@
     (function(){
       // SVGs for the action the button will perform
       var ICON_YELLOW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#f5d90a" d="M9 21h6v-1H9v1Zm3-19a7 7 0 0 0-4.9 11.9c.4.4.9 1.1.9 1.6V16h8v-.5c0-.6.5-1.2.9-1.6A7 7 0 0 0 12 2Zm3.5 12H8.5c-.1-.6-.5-1.3-1-1.8A5.5 5.5 0 1 1 16.5 12c-.5.5-.9 1.2-1 2Z"/></svg>';
-      var ICON_GRAY   = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#9aa3b2" d="M9 21h6v-1H9v1Zm3-19a7 7 0 0 0-4.9 11.9c.4.4.9 1.1.9 1.6V16h8v-.5c0-.6.5-1.2.9-1.6A7 7 0 0 0 12 2Zm3.5 12H8.5c-.1-.6-.5-1.3-1-1.8A5.5 5.5 0 1 1 16.5 12c-.5.5-.9 1.2-1 2Z"/></svg>';
+      var ICON_GRAY   = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#111316" d="M9 21h6v-1H9v1Zm3-19a7 7 0 0 0-4.9 11.9c.4.4.9 1.1.9 1.6V16h8v-.5c0-.6.5-1.2.9-1.6A7 7 0 0 0 12 2Zm3.5 12H8.5c-.1-.6-.5-1.3-1-1.8A5.5 5.5 0 1 1 16.5 12c-.5.5-.9 1.2-1 2Z"/></svg>';
 
       // 1) Initialize theme from localStorage or system preference
       var saved = localStorage.getItem('theme'); // "light" | "dark" | null
@@ -73,7 +73,7 @@
       function setButtonUI(btn, currentTheme) {
         var next = (currentTheme === 'light') ? 'dark' : 'light';
         var icon = (next === 'light') ? ICON_YELLOW : ICON_GRAY;   // yellow when going to light, gray when going to dark
-        btn.innerHTML = icon + (next === 'light' ? 'Light mode' : 'Dark mode');
+        btn.innerHTML = icon + (next === 'light' ? ' Light mode' : ' Dark mode');
         btn.setAttribute('aria-pressed', currentTheme === 'light' ? 'true' : 'false');
       }
 
