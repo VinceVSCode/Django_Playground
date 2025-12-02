@@ -209,3 +209,33 @@ html, body { background: var(--bg); color: var(--text); }
   background: transparent;
 }
 
+/* --- form controls inside filter bar --- */
+.filter-bar input[type="text"],
+.filter-bar input[type="date"],
+.filter-bar select {
+  background: var(--panel-strong);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: .5rem;
+  padding: .4rem .5rem;
+  min-width: 10rem;
+}
+
+.filter-bar input[type="text"]::placeholder { color: var(--muted); }
+
+.filter-bar input[type="checkbox"] {
+  width: 1rem; height: 1rem; vertical-align: middle;
+  accent-color: var(--focus);
+}
+
+.filter-bar input:focus-visible,
+.filter-bar select:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-color: var(--focus);
+}
+
+/* keep "Apply" / "Reset" aligned */
+.filter-actions { display:flex; gap:.5rem; align-items:center; }
+
+
