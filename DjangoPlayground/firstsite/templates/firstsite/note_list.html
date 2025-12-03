@@ -1,4 +1,5 @@
 {% extends "firstsite/base.html" %}
+{%load qsp %}
 {% block title %}Your Notes{% endblock %}
 
 {% block content %}
@@ -79,6 +80,7 @@
     <button class="button" type="submit">Apply</button>
     <a class="button" href="{% url 'note_lists' %}">Reset</a>
   </div>
+
   </form>
 </div>
 
@@ -136,33 +138,38 @@
 
   {# --- numbered pager goes here (next step) --- #}
 {% if page_obj.paginator.num_pages > 1 %}
-  <nav class="pagination">
-    {# First / Prev #}
+  <nav class="pager" aria-label="Pagination">
+    {# Previous #}
     {% if page_obj.has_previous %}
-      <a class="button" href="?{% if querystring %}{{ querystring }}&{% endif %}page=1">« First</a>
-      <a class="button" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}">‹ Prev</a>
+      <a href="?{% qs_keep page=page_obj.previous_page_number %}" aria-label="Previous page">«</a>
+    {% else %}
+      <span class="gap" aria-hidden="true">«</span>
     {% endif %}
 
-    {# Windowed page numbers with ellipses (no parentheses in conditions) #}
+    {# Page numbers (compact: show first, last, neighbors) #}
     {% for num in page_obj.paginator.page_range %}
-      {% if num == 1 or num == page_obj.paginator.num_pages or num >= page_obj.number|add:'-2' and num <= page_obj.number|add:'2' %}
+      {% if num == 1 or num == page_obj.paginator.num_pages or num|add:'-1' == page_obj.number or num == page_obj.number or num|add:'1' == page_obj.number %}
         {% if num == page_obj.number %}
-          <span class="button" style="font-weight:bold;">{{ num }}</span>
+          <span class="current" aria-current="page">{{ num }}</span>
         {% else %}
-          <a class="button" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}">{{ num }}</a>
+          <a href="?{% qs_keep page=num %}">{{ num }}</a>
         {% endif %}
-      {% elif num == page_obj.number|add:'-3' or num == page_obj.number|add:'3' %}
-        <span class="muted">…</span>
+      {% elif num == 2 and page_obj.number > 3 %}
+        <span class="gap">…</span>
+      {% elif num == page_obj.paginator.num_pages|add:'-1' and page_obj.number < page_obj.paginator.num_pages|add:'-2' %}
+        <span class="gap">…</span>
       {% endif %}
     {% endfor %}
 
-    {# Next / Last #}
+    {# Next #}
     {% if page_obj.has_next %}
-      <a class="button" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}">Next ›</a>
-      <a class="button" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.paginator.num_pages }}">Last »</a>
+      <a href="?{% qs_keep page=page_obj.next_page_number %}" aria-label="Next page">»</a>
+    {% else %}
+      <span class="gap" aria-hidden="true">»</span>
     {% endif %}
   </nav>
 {% endif %}
+
 
 
 {% else %}
