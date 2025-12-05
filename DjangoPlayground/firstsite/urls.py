@@ -17,6 +17,10 @@ urlpatterns = [
     path('notes/<int:pk>/toggle-archive/', v.note_toggle_archive, name='note_toggle_archive'), # Toggle archive status of a note
     path('notes/<int:pk>/versions/<int:version_id>/restore/', v.note_restore_version, name='note_restore_version'), # View note versions
 
+    # HTML inbox/sent
+    path('inbox/', v.inbox_list_view, name='inbox'), # View for inbox
+    path('sent/', v.sent_list_view, name='sent'), # View for sent notes
+
     # Tag views
     path('tags/', v.tag_list_view, name='tag_list'),
     path('tags/new/', v.tag_create_view, name='tag_create'),
@@ -32,7 +36,8 @@ urlpatterns = [
     path('api/notes/<int:pk>/versions/', v.api_note_versions, name='api_note_versions'),
     path('api/notes/<int:pk>/versions/<int:version_id>/restore/', v.api_note_restore_version, name='api_note_restore_version'),
     path('api/notes/<int:pk>/versions/<int:version_id>/', v.api_note_version_detail, name='api_note_version_detail'),
-    
+    path('api/inbox/', v.api_inbox_list, name='api_inbox'), # API endpoint for inbox
+    path('api/sent/', v.api_sent_list, name='api_sent'), # API endpoint for sent notes
     
     # API tag endpoints
     path('api/tags/', v.api_list_tags, name='api_list_tags'), # API endpoint to list all tags
