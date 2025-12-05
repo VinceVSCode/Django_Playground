@@ -354,9 +354,12 @@ def note_send_view(request, pk):
     if request.method == "POST":
         form = SendNoteForm(request.POST)
         if form.is_valid():
-            recipient = form.cleaned_data['recipient_username']
+
+            username = form.cleaned_data['recipient_username'].strip()
+            recipient = get_object_or_404(User, username=username)
+
             # Create a copy of the note for the recipient.
-            copy = Note.objects.create(
+            copy = Note(
                 title = note.title,
                 content = note.content,
                 owner =  recipient,
@@ -370,13 +373,29 @@ def note_send_view(request, pk):
 
             # Log send action
             NoteSend.objects.create(original_note=note, sender=request.user, recipient=recipient)
-           #log_note_event(request.user, note, NoteEvent.ACTION_SEND)
+            log_note_event(request.user, note, NoteEvent.ACTION_SEND)
 
             messages.success(request, f"Note sent to {recipient.username}.")
             return redirect("note_detail", pk=note.pk)
     else:
         form = SendNoteForm()
     return render(request, "firstsite/send_note.html", {"form": form, "note": note})
+
+@login_required
+def inbox_list_view(request):
+    """
+    List notes received by the user via SendNote.
+    """
+    sends = NoteSend.objects.filter(recipient=request.user).select_related('original_note', 'sender')
+    return render(request, 'firstsite/inbox_list.html', {'sends': sends})
+
+@login_required
+def sent_list_view(request):
+    """
+    List notes sent by the user via SendNote.
+    """
+    sends = NoteSend.objects.filter(sender=request.user).select_related('original_note', 'recipient')
+    return render(request, 'firstsite/sent_list.html', {'sends': sends})
 
 # API endpoint to create a new note
 @api_view(['GET', 'POST'])
@@ -710,7 +729,7 @@ def api_note_send(request,pk):
     Action: creates a COPY for recipient; logs NoteSend + NoteEvent('send')
     """
     note = get_object_or_404(Note, pk=pk, owner=request.user)
-    username = request.data.get('recipient_username','').strip()
+    username = (request.data.get('recipient_username') or "").strip()
     # Validate recipient username
     if not username:
         return Response({'detail': 'Recipient username is required'}, status=400)
@@ -718,10 +737,10 @@ def api_note_send(request,pk):
     try:
         recipient =  User.objects.get(username=username)
     except User.DoesNotExist:
-        return Response({'detail': 'Recipient not found'}, status=400)
+        return Response({'detail': 'Recipient not found'}, status=404)
 
     # Create a copy of the note for the recipient.
-    copy = Note.objects.create(
+    copy = Note(
         title = note.title,
         content = note.content,
         owner =  recipient,
@@ -735,12 +754,48 @@ def api_note_send(request,pk):
 
     # Log send action
     NoteSend.objects.create(original_note=note, sender=request.user, recipient=recipient)
-
-    #log_note_event(request.user, note, NoteEvent.ACTION_SEND)
+    log_note_event(request.user, note, NoteEvent.ACTION_SEND)
     
     # Return success response
-    return Response({'detail': f'Sent to {recipient.username}.'}, status=201)
+    return Response({"status": "sent","recipient": recipient.username,"copy_id": copy.pk}, status=201)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_inbox_list(request):
+    """
+    List notes received by the user via NoteSend.
+    GET /api/notes/inbox/
+    """
+    sends = NoteSend.objects.filter(recipient=request.user).select_related('original_note', 'sender')
+    data = [
+        {"id":s,id,
+         "sender": s.sender.username if s.sender_id else None,
+         "original_note_id": s.original_note_id,
+         "created_at":s.created_at,
+        } 
+        for s in sends
+    ]
+    return Response(data, status=200)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_sent_list(request):
+    """
+    List notes sent by the user via NoteSend.
+    GET /api/notes/sent/
+    """
+    sends = NoteSend.objects.filter(sender=request.user).select_related('original_note', 'recipient')
+    data = [
+        {
+            "id": s.id,
+            "recipient": s.recipient.username if s.recipient_id else None,
+            "original_note_id": s.original_note_id,
+            "created_at": s.created_at,
+        }
+        for s in sends
+        ]
+    
+    return Response(data, status=200)
 # Note Analytics API endpoint
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
