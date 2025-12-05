@@ -1,0 +1,20 @@
+{% extends "firstsite/base.html" %}
+{% block title %}Sent{% endblock %}
+{% block content %}
+<div class="card">
+  <h2 style="margin-top:0;">Sent</h2>
+  {% if sends %}
+    <ul>
+      {% for s in sends %}
+        <li>
+          To <strong>{{ s.recipient.username }}</strong>
+          — note #{{ s.original_note_id }}
+          — {{ s.created_at|date:"Y-m-d H:i" }}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">No sent notes yet.</p>
+  {% endif %}
+</div>
+{% endblock %}
