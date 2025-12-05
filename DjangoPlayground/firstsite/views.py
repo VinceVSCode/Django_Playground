@@ -768,7 +768,7 @@ def api_inbox_list(request):
     """
     sends = NoteSend.objects.filter(recipient=request.user).select_related('original_note', 'sender')
     data = [
-        {"id":s,id,
+        {"id":s.id,
          "sender": s.sender.username if s.sender_id else None,
          "original_note_id": s.original_note_id,
          "created_at":s.created_at,
