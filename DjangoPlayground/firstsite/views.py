@@ -56,9 +56,9 @@ def signup(request):
             user = form.save()
             login(request, user)
             return redirect('note_lists')
-        else:
-            form =  UserCreationForm()
-        return render(request, 'registration/signup.html', {'form': form})
+    else:
+        form =  UserCreationForm()
+    return render(request, 'registration/signup.html', {'form': form})
 
 # Redirect to notes list if logged in, else to login page.
 def home(request):
