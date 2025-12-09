@@ -4,6 +4,8 @@ from firstsite import views as v
 
 urlpatterns = [
     path('hello/', v.hello_world, name='hello_world'), # Maps the root URL to the hello_world view. Basically /firstsite/ will call the hello_world function.
+    #signup view
+    path('accounts/signup/', v.signup, name='signup'),
 
     # User notes
     path('notes/', v.user_notes, name = "user_notes"),

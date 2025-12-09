@@ -1,0 +1,13 @@
+{% extends "firstsite/base.html" %}
+{% block title %}Create account{% endblock %}
+{% block content %}
+<div class="card" style="max-width: 520px;">
+  <h2 style="margin:0 0 .75rem;">Create account</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="button" type="submit">Sign up</button>
+    <a class="button" href="{% url 'login' %}">Back to login</a>
+  </form>
+</div>
+{% endblock %}
