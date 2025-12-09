@@ -15,9 +15,13 @@
 
       <!-- Primary nav -->
       <nav class="topbar__nav" aria-label="Main navigation">
-        <a href="{% url 'note_lists' %}" class="topbar__link">Notes</a>
-        <a href="{% url 'create_note' %}" class="topbar__link">New note</a>
-        <a href="{% url 'analytics' %}" class="topbar__link">Analytics</a>
+        {% if request.user.is_authenticated %}
+          <a href="{% url 'note_lists' %}" class="topbar__link">Notes</a>
+          <a href="{% url 'create_note' %}" class="topbar__link">New note</a>
+          <a href="{% url 'analytics' %}" class="topbar__link">Analytics</a>
+          <a href="{% url 'inbox' %}" class="topbar__link">Inbox</a>
+          <a href="{% url 'sent' %}" class="topbar__link">Sent</a>
+        {% endif %}
       </nav>
     </div>
 

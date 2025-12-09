@@ -5,6 +5,8 @@ from .models import Note, NoteVersion, Tag, NoteSend, NoteEvent
 from .forms import NoteForm, TagForm, SendNoteForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
 from rest_framework.decorators import api_view, permission_classes
 from django.views.decorators.http import require_POST
 from rest_framework.permissions import IsAuthenticated
@@ -27,7 +29,7 @@ Authorization: Token your_generated_token
 
 Have fun!
 """
-# Create your views here.
+# Create my views here.
 
 def hello_world(request):
     if request.user.is_authenticated:
@@ -42,6 +44,21 @@ def hello_world(request):
         'message': message
     }
     return render(request, 'firstsite/hello.html', context)
+
+def signup(request):
+    """
+    Minimal user registration using Django's built-in UserCreationForm.
+    On success, logs in the new user and redirects to notes list.
+    """
+    if request.method == 'POST':
+        form =  UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('note_lists')
+        else:
+            form =  UserCreationForm()
+        return render(request, 'registration/signup.html', {'form': form})
 
 # Redirect to notes list if logged in, else to login page.
 def home(request):
