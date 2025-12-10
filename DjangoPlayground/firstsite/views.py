@@ -55,6 +55,7 @@ def signup(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
+            messages.success(request, "Welcome! Your account was created.")
             return redirect('note_lists')
     else:
         form =  UserCreationForm()
