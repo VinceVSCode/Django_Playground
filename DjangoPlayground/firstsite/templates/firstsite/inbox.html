@@ -1,13 +1,21 @@
 {% extends "firstsite/base.html" %}
 {% load qsp %}
+
+{% block title %}Inbox{% endblock %}
+{% block content %}
 <div class="card">
   <h2 style="margin-top:0;">Inbox</h2>
 
-  {% if page_obj.object_list %}
+  {% if page_obj and page_obj.object_list %}
     <ul>
       {% for s in page_obj.object_list %}
         <li>
-          From <strong>{{ s.sender.username if s.sender_id else "unknown" }}</strong>
+          From
+          {% if s.sender_id %}
+            <strong>{{ s.sender.username }}</strong>
+          {% else %}
+            <strong>unknown</strong>
+          {% endif %}
           — note #{{ s.original_note_id }}
           — {{ s.created_at|date:"Y-m-d H:i" }}
         </li>
@@ -44,8 +52,7 @@
       </nav>
     {% endif %}
   {% else %}
-    <p class="muted">No incoming notes.</p>
+    <p class="muted">Empty inbox.</p>
   {% endif %}
 </div>
-
 {% endblock %}
