@@ -19,6 +19,7 @@ from django.core.paginator import Paginator
 from django.utils.dateparse import parse_date
 from django.db.models import Count
 from django.db.models.functions import TruncDay, TruncWeek, TruncMonth, TruncYear
+from math import ceil
 
 
 """
@@ -404,16 +405,22 @@ def inbox_list_view(request):
     """
     List notes received by the user via SendNote.
     """
-    sends = NoteSend.objects.filter(recipient=request.user).select_related('original_note', 'sender')
-    return render(request, 'firstsite/inbox_list.html', {'sends': sends})
+    sends_qs = NoteSend.objects.filter(recipient=request.user).select_related("original_note", "sender").order_by("-created_at")
+    paginator = Paginator(sends_qs, 12)  
+    page_number = request.GET.get("page") or 1
+    page_obj = paginator.get_page(page_number)
+    return render(request, "firstsite/inbox.html", {"page_obj": page_obj})
 
 @login_required
 def sent_list_view(request):
     """
     List notes sent by the user via SendNote.
     """
-    sends = NoteSend.objects.filter(sender=request.user).select_related('original_note', 'recipient')
-    return render(request, 'firstsite/sent_list.html', {'sends': sends})
+    sends_qs = NoteSend.objects.filter(sender=request.user).select_related("original_note", "recipient").order_by("-created_at")
+    paginator = Paginator(sends_qs, 12)
+    page_number = request.GET.get("page") or 1
+    page_obj = paginator.get_page(page_number)
+    return render(request, "firstsite/sent.html", {"page_obj": page_obj})
 
 # API endpoint to create a new note
 @api_view(['GET', 'POST'])
@@ -777,6 +784,38 @@ def api_note_send(request,pk):
     # Return success response
     return Response({"status": "sent","recipient": recipient.username,"copy_id": copy.pk}, status=201)
 
+# Helper function for pagination
+def _paginate(request, qs, default_size=20, max_size=100):
+    """
+    Docstring for _paginate
+    
+    :param request: The HTTP request object containing query parameters for pagination.
+    :param qs:  The Django QuerySet to be paginated.
+    :param default_size: The default number of items per page if not specified in the request.
+    :param max_size:  The maximum number of items allowed per page.
+    :return: A tuple containing the list of items for the current page and a dictionary with pagination metadata.
+    
+    """
+    try:
+        page = max(int(request.GET.get("page", 1)), 1)
+    except ValueError:
+        page = 1
+    try:
+        size = int(request.GET.get("page_size", default_size))
+    except ValueError:
+        size = default_size
+    size = min(max(size, 1), max_size)
+
+    total = qs.count()
+    num_pages = ceil(total / size) if size else 1
+    if page > num_pages and num_pages > 0:
+        page = num_pages
+
+    start = (page - 1) * size
+    end = start + size
+    items = list(qs[start:end])
+    return items, {"count": total, "page": page, "page_size": size, "num_pages": num_pages}
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def api_inbox_list(request):
@@ -784,16 +823,18 @@ def api_inbox_list(request):
     List notes received by the user via NoteSend.
     GET /api/notes/inbox/
     """
-    sends = NoteSend.objects.filter(recipient=request.user).select_related('original_note', 'sender')
+    qs = NoteSend.objects.filter(recipient=request.user).select_related("original_note", "sender").order_by("-created_at")
+    items, meta = _paginate(request, qs)
     data = [
-        {"id":s.id,
-         "sender": s.sender.username if s.sender_id else None,
-         "original_note_id": s.original_note_id,
-         "created_at":s.created_at,
-        } 
-        for s in sends
+        {
+            "id": s.id,
+            "sender": s.sender.username if s.sender_id else None,
+            "original_note_id": s.original_note_id,
+            "created_at": s.created_at,
+        }
+        for s in items
     ]
-    return Response(data, status=200)
+    return Response({"results": data, **meta}, status=200)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -802,7 +843,8 @@ def api_sent_list(request):
     List notes sent by the user via NoteSend.
     GET /api/notes/sent/
     """
-    sends = NoteSend.objects.filter(sender=request.user).select_related('original_note', 'recipient')
+    qs = NoteSend.objects.filter(sender=request.user).select_related("original_note", "recipient").order_by("-created_at")
+    items, meta = _paginate(request, qs)
     data = [
         {
             "id": s.id,
@@ -810,10 +852,9 @@ def api_sent_list(request):
             "original_note_id": s.original_note_id,
             "created_at": s.created_at,
         }
-        for s in sends
-        ]
-    
-    return Response(data, status=200)
+        for s in items
+    ]
+    return Response({"results": data, **meta}, status=200)
 # Note Analytics API endpoint
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

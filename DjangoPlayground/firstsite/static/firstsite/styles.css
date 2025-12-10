@@ -241,37 +241,13 @@ html, body { background: var(--bg); color: var(--text); }
 
 /* === Pager styling === */
 .pager{
-  display:flex;
-  flex-wrap: wrap;
-  gap: .35rem;
-  justify-content: center;
-  margin-top: 1rem;
+  display:flex; flex-wrap: wrap; gap: .35rem; justify-content: center; margin-top: 1rem;
 }
-
 .pager a, .pager span{
-  display:inline-block;
-  padding: .35rem .6rem;
-  border: 1px solid var(--line);
-  border-radius: .55rem;
-  background: var(--panel);
-  color: var(--text);
-  text-decoration: none;
-  min-width: 2rem;
-  text-align: center;
+  display:inline-block; padding: .35rem .6rem; border: 1px solid var(--line);
+  border-radius: .55rem; background: var(--panel); color: var(--text);
+  text-decoration: none; min-width: 2rem; text-align: center;
 }
-
-.pager a:hover{
-  background: var(--panel-strong);
-}
-
-.pager .current{
-  background: var(--panel-strong);
-  border-color: #3a4253;
-  font-weight: 600;
-}
-
-.pager .gap{
-  border-color: transparent;
-  background: transparent;
-  color: var(--muted);
-}
+.pager a:hover{ background: var(--panel-strong); }
+.pager .current{ background: var(--panel-strong); border-color: #3a4253; font-weight: 600; }
+.pager .gap{ border-color: transparent; background: transparent; color: var(--muted); }

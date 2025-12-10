@@ -1,20 +1,51 @@
 {% extends "firstsite/base.html" %}
-{% block title %}Inbox{% endblock %}
-{% block content %}
+{% load qsp %}
 <div class="card">
   <h2 style="margin-top:0;">Inbox</h2>
-  {% if sends %}
+
+  {% if page_obj.object_list %}
     <ul>
-      {% for s in sends %}
+      {% for s in page_obj.object_list %}
         <li>
-          From <strong>{{ s.sender.username }}</strong>
+          From <strong>{{ s.sender.username if s.sender_id else "unknown" }}</strong>
           — note #{{ s.original_note_id }}
           — {{ s.created_at|date:"Y-m-d H:i" }}
         </li>
       {% endfor %}
     </ul>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+      <nav class="pager" aria-label="Pagination">
+        {% if page_obj.has_previous %}
+          <a href="?{% qs_keep page=page_obj.previous_page_number %}" aria-label="Previous page">«</a>
+        {% else %}
+          <span class="gap" aria-hidden="true">«</span>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+          {% if num == 1 or num == page_obj.paginator.num_pages or num|add:'-1' == page_obj.number or num == page_obj.number or num|add:'1' == page_obj.number %}
+            {% if num == page_obj.number %}
+              <span class="current" aria-current="page">{{ num }}</span>
+            {% else %}
+              <a href="?{% qs_keep page=num %}">{{ num }}</a>
+            {% endif %}
+          {% elif num == 2 and page_obj.number > 3 %}
+            <span class="gap">…</span>
+          {% elif num == page_obj.paginator.num_pages|add:'-1' and page_obj.number < page_obj.paginator.num_pages|add:'-2' %}
+            <span class="gap">…</span>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+          <a href="?{% qs_keep page=page_obj.next_page_number %}" aria-label="Next page">»</a>
+        {% else %}
+          <span class="gap" aria-hidden="true">»</span>
+        {% endif %}
+      </nav>
+    {% endif %}
   {% else %}
     <p class="muted">No incoming notes.</p>
   {% endif %}
 </div>
+
 {% endblock %}
