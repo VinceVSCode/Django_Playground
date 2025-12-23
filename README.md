@@ -1,5 +1,6 @@
 # Django Playground
 ![tests](https://github.com/VinceVSCode/Django_Playground/actions/workflows/tests.yml/badge.svg)
+<img width="1536" height="1024" alt="DjangoPlayground" src="https://github.com/user-attachments/assets/ada6156a-efe2-4180-8052-0623e1bf04ac" />
 
 A Django learning project designed for exploring Django framework concepts and features. This repository serves as a practical playground for understanding Django development, including models, views, templates, authentication, and REST APIs.
 
