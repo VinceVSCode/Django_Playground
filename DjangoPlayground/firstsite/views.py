@@ -374,7 +374,7 @@ def note_send_view(request, pk):
         form = SendNoteForm(request.POST)
         if form.is_valid():
 
-            username = form.cleaned_data['recipient_username'].strip()
+            username = form.cleaned_data['recipient_username']
             recipient = get_object_or_404(User, username=username)
 
             # Create a copy of the note for the recipient.
@@ -398,7 +398,7 @@ def note_send_view(request, pk):
             return redirect("note_detail", pk=note.pk)
     else:
         form = SendNoteForm()
-    return render(request, "firstsite/send_note.html", {"form": form, "note": note})
+    return render(request, "firstsite/note_send.html", {"form": form, "note": note})
 
 @login_required
 def inbox_list_view(request):

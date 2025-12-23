@@ -46,7 +46,11 @@ class SendNoteForm(forms.Form):
     recipient_username = forms.CharField(max_length=150, label="Send to (username)")
 
     def clean_recipient_username(self):
-        name = self.cleaned_data['recipient_username'].strip()
+        name = (self.cleaned_data.get('recipient_username') or "")
+        name = str(name).strip()
+        if not name:
+            raise forms.ValidationError("Please enter a username.")
+        
         try:
             return User.objects.get(username=name)
         except User.DoesNotExist:
