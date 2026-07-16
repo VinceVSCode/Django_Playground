@@ -1,5 +1,6 @@
 import pytest
 from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
 from firstsite.models import Note, NoteSend, NoteEvent
 
 @pytest.mark.django_db
@@ -7,7 +8,8 @@ def test_api_send_creates_copy_and_logs(client, user):
     recipient = User.objects.create_user("bob", password="x")
     note = Note.objects.create(title="T", content="C", owner=user)
 
-    client.defaults['HTTP_AUTHORIZATION'] = f"Token {user.auth_token.key}"
+    token, _ = Token.objects.get_or_create(user=user)
+    client.defaults['HTTP_AUTHORIZATION'] = f"Token {token.key}"
     r = client.post(f"/api/notes/{note.pk}/send/", data={"recipient_username": "bob"}, content_type="application/json")
     assert r.status_code == 201
 

@@ -77,10 +77,11 @@ Django_Playground/
    source django_env/bin/activate  # On Windows: django_env\Scripts\activate
    ```
 
-3. **Install dependencies**
+3. **Install dependencies** (from the repository root, where `requirements.txt` lives)
    ```bash
-   pip install django djangorestframework
+   pip install -r requirements.txt
    ```
+   This installs Django, Django REST Framework, and the test tooling (pytest, pytest-django, factory_boy, Faker).
 
 4. **Navigate to the Django project directory**
    ```bash
@@ -125,14 +126,25 @@ Django_Playground/
 
 ### REST API Endpoints
 
-All API endpoints require authentication and return JSON responses.
+All API endpoints require authentication (token or session) and return JSON responses.
 
 #### Notes API
-- **GET /api/notes/**: Retrieve all notes for the authenticated user
+- **GET /api/notes/**: Retrieve all notes for the authenticated user (supports `?tag=`, `?untagged=1`, `?search=`, `?pinned=`, `?archived=`)
 - **POST /api/notes/**: Create a new note
 - **GET /api/notes/{id}/**: Retrieve a specific note
-- **PUT /api/notes/{id}/**: Update a specific note
+- **PUT /api/notes/{id}/**: Update a specific note (snapshots a version first)
 - **DELETE /api/notes/{id}/**: Delete a specific note
+- **POST /api/notes/{id}/send/**: Send a copy to another user (`{"recipient_username": "bob"}`)
+- **GET/POST/DELETE /api/notes/{id}/versions/**, **POST .../versions/{vid}/restore/**: version history
+- **GET /api/inbox/**, **GET /api/sent/**: send history
+- **GET/POST /api/tags/**, **GET /api/analytics/notes/**
+
+#### Authentication (token)
+
+Generate a token for a user, then send it as an `Authorization: Token <key>` header:
+```bash
+python manage.py drf_create_token <username>
+```
 
 #### API Usage Examples
 
@@ -140,14 +152,14 @@ All API endpoints require authentication and return JSON responses.
 ```bash
 curl -X POST http://127.0.0.1:8000/api/notes/ \
   -H "Content-Type: application/json" \
-  -H "Authorization: Basic <your-credentials>" \
+  -H "Authorization: Token <your-token>" \
   -d '{"title": "My Note", "content": "This is my note content"}'
 ```
 
 **Retrieve notes** (GET /api/notes/):
 ```bash
 curl -X GET http://127.0.0.1:8000/api/notes/ \
-  -H "Authorization: Basic <your-credentials>"
+  -H "Authorization: Token <your-token>"
 ```
 
 ## 📊 Database Schema
@@ -155,17 +167,27 @@ curl -X GET http://127.0.0.1:8000/api/notes/ \
 ### Note Model
 ```python
 class Note(models.Model):
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=100)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    is_pinned = models.BooleanField(default=False)
+    is_archived = models.BooleanField(default=False)
+    tags = models.ManyToManyField('Tag', blank=True)
 ```
 
 **Fields:**
-- `title`: Note title (max 200 characters)
+- `title`: Note title (max 100 characters)
 - `content`: Note content (unlimited text)
-- `created_at`: Automatic timestamp when note is created
+- `created_at` / `updated_at`: Automatic timestamps
 - `owner`: Foreign key to Django's built-in User model
+- `is_pinned` / `is_archived`: Boolean flags used by the list filters
+- `tags`: Many-to-many link to per-user `Tag` records
+
+**Related models:** `Tag` (per-user, unique name), `NoteVersion` (edit-history snapshots),
+`NoteSend` (log of a note copied to another user), and `NoteEvent` (create/update/delete/send
+audit trail powering analytics).
 
 ## 🔧 Development
 
