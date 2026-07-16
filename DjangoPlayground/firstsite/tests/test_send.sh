@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -e
-export DJANGO_SETTINGS_MODULE=DjangoPlayground.settings
+export DJANGO_SETTINGS_MODULE=DjangoPlayground.settings_dev
 if pytest -q firstsite/tests/test_send.py; then
   echo "[OK] Send Note feature tests passed."
 else
