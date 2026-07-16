@@ -1,5 +1,6 @@
 from django.urls import path
 from firstsite import views as v
+from firstsite import api
 
 
 urlpatterns = [
@@ -31,19 +32,19 @@ urlpatterns = [
     path('tags/<int:pk>/delete/', v.tag_delete_view, name='tag_delete'),
 
     # API note endpoints
-    path('api/notes/', v.api_user_notes, name='api_user_notes'), # API endpoint to get user notes
-    path('api/analytics/notes/', v.api_note_analytics, name='api_note_analytics'),
+    path('api/notes/', api.api_user_notes, name='api_user_notes'), # API endpoint to get user notes
+    path('api/analytics/notes/', api.api_note_analytics, name='api_note_analytics'),
     #path('api/notes/create/', api_user_notes, name='api_create_note'), # API endpoint to create a new note
-    path('api/notes/<int:pk>/', v.api_note_detail, name='api_note_detail'), # API endpoint to get a specific note
-    path('api/notes/<int:pk>/send/', v.api_note_send, name='api_note_send'), 
-    path('api/notes/<int:pk>/versions/', v.api_note_versions, name='api_note_versions'),
-    path('api/notes/<int:pk>/versions/<int:version_id>/restore/', v.api_note_restore_version, name='api_note_restore_version'),
-    path('api/notes/<int:pk>/versions/<int:version_id>/', v.api_note_version_detail, name='api_note_version_detail'),
-    path('api/inbox/', v.api_inbox_list, name='api_inbox'), # API endpoint for inbox
-    path('api/sent/', v.api_sent_list, name='api_sent'), # API endpoint for sent notes
+    path('api/notes/<int:pk>/', api.api_note_detail, name='api_note_detail'), # API endpoint to get a specific note
+    path('api/notes/<int:pk>/send/', api.api_note_send, name='api_note_send'), 
+    path('api/notes/<int:pk>/versions/', api.api_note_versions, name='api_note_versions'),
+    path('api/notes/<int:pk>/versions/<int:version_id>/restore/', api.api_note_restore_version, name='api_note_restore_version'),
+    path('api/notes/<int:pk>/versions/<int:version_id>/', api.api_note_version_detail, name='api_note_version_detail'),
+    path('api/inbox/', api.api_inbox_list, name='api_inbox'), # API endpoint for inbox
+    path('api/sent/', api.api_sent_list, name='api_sent'), # API endpoint for sent notes
     
     # API tag endpoints
-    path('api/tags/', v.api_list_tags, name='api_list_tags'), # API endpoint to list all tags
+    path('api/tags/', api.api_list_tags, name='api_list_tags'), # API endpoint to list all tags
 
     # Analytics endpoint
     path('analytics/', v.analytics_view, name='analytics'), # View for analytics
