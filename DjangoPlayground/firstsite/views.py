@@ -68,12 +68,6 @@ def home(request):
         return redirect('note_lists')  # to your notes list
     return redirect('login')           # to /accounts/login/
 
-# API endpoint to get user notes
-@login_required
-def user_notes(request):
-    notes = Note.objects.filter(owner=request.user).order_by('-created_at')
-    return render(request, 'firstsite/user_notes.html', {'notes': notes})
-
 # View to list notes for the logged-in user. Render a template with the notes.
 @login_required
 def note_lists_view(request):
@@ -217,32 +211,6 @@ def create_note(request):
         form = NoteForm(user=request.user)
     return render(request, "firstsite/create_note.html", {"form": form})
 
-# API endpoint to edit note
-@login_required
-def edit_note (request, pk):
-    note = get_object_or_404(Note,pk=pk, owner=request.user)
-    if request.method == "POST":
-        form = NoteForm(request.POST, instance=note)
-        form.fields["tags"].queryset = Tag.objects.filter(owner=request.user)
-
-        if form.is_valid():
-            # Snapshot current state before updating (versioning)
-            NoteVersion.objects.create(
-                note=note,
-                title=note.title,
-                content=note.content,
-                updated_by=request.user,
-            )
-            # signal who made the change
-            attach_actor(note, user=request.user)
-            
-            form.save()  # saves fields + m2m
-            return redirect("note_detail", pk=note.pk)
-    else:
-        form = NoteForm(instance=note)
-        form.fields["tags"].queryset = Tag.objects.filter(owner=request.user)
-
-    return render(request, "firstsite/edit_note.html", {"form": form, "note": note})
 # API endpoint to update note
 @login_required
 def note_update_view(request, pk):
@@ -265,10 +233,7 @@ def note_update_view(request, pk):
             # signal who made the change
             attach_actor(note, user=request.user)
             form.save()  # saves fields + m2m
-
-            # update event log
-            #log_note_event(request.user, note, NoteEvent.ACTION_UPDATE)
-
+            # NoteEvent('update') is logged automatically by the post_save signal.
             messages.success(request, "Note updated successfully!")
             return redirect("note_detail", pk=note.pk)
     else:
@@ -285,9 +250,8 @@ def note_delete_view(request, pk):
     note = get_object_or_404(Note, pk=pk, owner=request.user)
     if request.method == "POST":
         attach_actor(note, request.user)
-        # delete first or log first? let's delete first. (don't know if it matters)
         note.delete()
-        #log_note_event(request.user, None, NoteEvent.ACTION_DELETE)
+        # NoteEvent('delete') is logged automatically by the post_delete signal.
         messages.success(request, "Note deleted successfully.")
 
         return redirect("note_lists")
@@ -529,8 +493,7 @@ def api_note_detail(request, pk):
         if serializer.is_valid():
             attach_actor(note, request.user)
             serializer.save()
-            #log_note_event(request.user, note, NoteEvent.ACTION_UPDATE)
-
+            # NoteEvent('update') is logged automatically by the post_save signal.
             # update tags
             tags = request.data.get('tags', [])
             note.tags.set(Tag.objects.filter(id__in=tags, owner=request.user))
@@ -542,10 +505,7 @@ def api_note_detail(request, pk):
         # Delete the note
         attach_actor(note, request.user)
         note.delete()
-        
-        # Same here as above, log delete event
-        #log_note_event(request.user, None, NoteEvent.ACTION_DELETE)
-
+        # NoteEvent('delete') is logged automatically by the post_delete signal.
         return Response(status=204)
 
 # --- Analytics HTML page (server-rendered) ---

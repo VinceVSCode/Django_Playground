@@ -28,9 +28,9 @@ class NoteVersionSerializer(serializers.ModelSerializer):
     class Meta:
         model = NoteVersion
         # Include all fields from the NoteVersion model
-        fields = ['id', 'title', 'content', 'timestamp', 'updated_at', 'updated_by','updated_by_username']
+        fields = ['id', 'title', 'content', 'timestamp', 'updated_by','updated_by_username']
         # Make certain fields read-only as they are auto-generated.
-        read_only_fields = ['timestamp', 'updated_at', 'updated_by']
+        read_only_fields = ['timestamp', 'updated_by']
         
     def get_updated_by_username(self, obj):
         # Safely return the username of the user who made the update, or None if not available

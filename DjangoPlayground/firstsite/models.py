@@ -35,7 +35,6 @@ class NoteVersion(models.Model):
     title = models.CharField(max_length=100)
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
     updated_by = models.ForeignKey( User,on_delete=models.SET_NULL, null=True, blank=True, related_name='note_versions')
     
     def __str__(self):

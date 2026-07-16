@@ -10,7 +10,6 @@ urlpatterns = [
     path('signup/', v.signup, name='signup'),
 
     # User notes
-    path('notes/', v.user_notes, name = "user_notes"),
     path('notes/create/', v.create_note, name='create_note'), # Maps the URL /firstsite/notes/create/ to the create_note view.
     path('notes/list/', v.note_lists_view, name='note_lists'), # Maps the URL /firstsite/notes/list/ to the note_lists_view.
     path('notes/<int:pk>/', v.note_detail_view, name='note_detail'), # Maps the URL /firstsite/notes/<int:pk>/ to the note_detail_view.
