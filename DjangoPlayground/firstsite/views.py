@@ -343,7 +343,6 @@ def tag_update_view(request, pk):
     if request.method == 'POST':
         form = TagForm(request.POST, instance=tag, user=request.user)
         if form.is_valid():
-            note = get_object_or_404(Note, pk=pk, owner=request.user)
             form.save()
             messages.success(request, "Tag renamed.")
             return redirect('tag_list')
@@ -374,8 +373,8 @@ def note_send_view(request, pk):
         form = SendNoteForm(request.POST)
         if form.is_valid():
 
-            username = form.cleaned_data['recipient_username']
-            recipient = get_object_or_404(User, username=username)
+            # SendNoteForm.clean_recipient_username validates and returns the User.
+            recipient = form.cleaned_data['recipient_username']
 
             # Create a copy of the note for the recipient.
             copy = Note(
@@ -623,7 +622,7 @@ def analytics_view(request):
     return render(request, 'firstsite/analytics.html', ctx)
 
 # Note Version API endpoint
-@api_view(['GET','DELETE','PUT'])
+@api_view(['GET','POST','DELETE'])
 @permission_classes([IsAuthenticated])
 def api_note_versions(request, pk):
     """
