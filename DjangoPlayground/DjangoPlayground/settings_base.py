@@ -2,7 +2,7 @@
 import os
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent  # points to Django_Playground/
+BASE_DIR = Path(__file__).resolve().parent.parent  # dir containing manage.py
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-insecure-key")
 DEBUG = os.environ.get("DJANGO_DEBUG", "true").lower() == "true"
@@ -21,6 +21,8 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    # Attaches request.user to thread-local storage so signals can log the actor.
+    "firstsite.middleware.CurrentUserMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -75,3 +77,8 @@ REST_FRAMEWORK = {
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "note_lists"
 LOGOUT_REDIRECT_URL = "login"
+
+# Session settings (CustomLoginView "remember me" reads SESSION_COOKIE_AGE)
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 14   # 2 weeks
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # allow persistent cookies
+SESSION_SAVE_EVERY_REQUEST = True        # refresh expiry on every request

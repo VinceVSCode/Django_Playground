@@ -1,5 +1,5 @@
 $ErrorActionPreference = "Stop"
-$env:DJANGO_SETTINGS_MODULE = "DjangoPlayground.settings"
+$env:DJANGO_SETTINGS_MODULE = "DjangoPlayground.settings_dev"
 
 Write-Host "▶ Running analytics tests..."
 pytest -q firstsite/tests/test_analytics.py

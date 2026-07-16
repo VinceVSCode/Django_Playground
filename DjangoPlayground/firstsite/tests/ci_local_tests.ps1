@@ -1,5 +1,5 @@
 #similar to ci_tests.sh but for local Windows PowerShell execution, no prints
-$env:DJANGO_SETTINGS_MODULE = "DjangoPlayground.settings"
+$env:DJANGO_SETTINGS_MODULE = "DjangoPlayground.settings_dev"
 python -m pip install --upgrade pip
 if (Test-Path requirements.txt) {
   pip install -r requirements.txt

@@ -3,7 +3,7 @@
 # This script runs the Django tests in a local CI-like environment.
 # remember to give execute permissions: chmod +x ci_local_tests.sh
 set -e
-export DJANGO_SETTINGS_MODULE=DjangoPlayground.settings
+export DJANGO_SETTINGS_MODULE=DjangoPlayground.settings_dev
 echo "Upgrade pip "
 python -m pip install --upgrade pip
 echo "Install dependencies from requirements.txt if exists"

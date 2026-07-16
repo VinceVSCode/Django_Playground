@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-export DJANGO_SETTINGS_MODULE=DjangoPlayground.settings
+export DJANGO_SETTINGS_MODULE=DjangoPlayground.settings_dev
 
 echo "▶ Running analytics tests..."
 pytest -q firstsite/tests/test_analytics.py
