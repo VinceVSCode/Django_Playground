@@ -91,6 +91,9 @@ ENV/
 .DS_Store
 Thumbs.db
 
+# Local project wiki (kept out of version control)
+wiki/
+
 # pyenv
 .python-version
 
