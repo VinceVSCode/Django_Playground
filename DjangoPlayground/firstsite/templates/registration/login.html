@@ -1,17 +1,28 @@
 {% extends "firstsite/base.html" %}
 {% block title %}Login{% endblock %}
 {% block content %}
-<div class="card" style="max-width:420px;margin:2rem auto;">
-  <h2 style="margin-top:0;">Sign in</h2>
-  {% if form.errors %}<p class="message error">Invalid username or password.</p>{% endif %}
+<div class="card auth-card">
+  <h1>Sign in</h1>
+  {% if form.errors %}<div class="message message--error">Invalid username or password.</div>{% endif %}
   <form method="post" action="{% url 'login' %}">
     {% csrf_token %}
-    <p>{{ form.username.label_tag }}<br>{{ form.username }}</p>
-    <p>{{ form.password.label_tag }}<br>{{ form.password }}</p>
-    <p><label><input type="checkbox" name="remember_me"> Remember me</label></p>
+    <div class="form-field">
+      {{ form.username.label_tag }}
+      {{ form.username }}
+    </div>
+    <div class="form-field">
+      {{ form.password.label_tag }}
+      {{ form.password }}
+    </div>
+    <div class="form-field form-field--checkbox">
+      <input type="checkbox" name="remember_me" id="id_remember_me">
+      <label for="id_remember_me">Remember me</label>
+    </div>
     <input type="hidden" name="next" value="{% url 'note_lists' %}">
-    <button class="button" type="submit">Log in</button>
-    <a class="button" href="{% url 'signup' %}">Create account</a>
+    <div class="form-actions">
+      <button class="button button--primary" type="submit">Log in</button>
+      <a class="button" href="{% url 'signup' %}">Create account</a>
+    </div>
   </form>
 </div>
 {% endblock %}

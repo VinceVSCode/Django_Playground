@@ -1,17 +1,20 @@
 {% extends "firstsite/base.html" %}
 {% block title %}Send Note{% endblock %}
 {% block content %}
-<div class="card" style="max-width:720px;">
-  <h2 style="margin-top:0;">Send “{{ note.title }}”</h2>
+<div class="card card--narrow card--center">
+  <h1>Send “{{ note.title }}”</h1>
   <form method="post">
     {% csrf_token %}
-    <div style="margin-bottom:.6rem;">
-      <label for="id_recipient_username" class="muted">Recipient username</label><br>
+    <div class="form-field">
+      <label for="id_recipient_username">Recipient username</label>
       {{ form.recipient_username }}
+      {% for error in form.recipient_username.errors %}<p class="form-field__error">{{ error }}</p>{% endfor %}
     </div>
-    <button class="button" type="submit">Send</button>
-    <a class="button" href="{% url 'note_detail' note.pk %}">Cancel</a>
+    {% for error in form.non_field_errors %}<p class="form-field__error">{{ error }}</p>{% endfor %}
+    <div class="form-actions">
+      <button class="button button--primary" type="submit">Send</button>
+      <a class="button" href="{% url 'note_detail' note.pk %}">Cancel</a>
+    </div>
   </form>
 </div>
 {% endblock %}
-

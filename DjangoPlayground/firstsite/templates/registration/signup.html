@@ -1,13 +1,23 @@
 {% extends "firstsite/base.html" %}
 {% block title %}Create account{% endblock %}
 {% block content %}
-<div class="card" style="max-width: 520px;">
-  <h2 style="margin:0 0 .75rem;">Create account</h2>
+<div class="card auth-card">
+  <h1>Create account</h1>
   <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button class="button" type="submit">Sign up</button>
-    <a class="button" href="{% url 'login' %}">Back to login</a>
+    {% for field in form %}
+      <div class="form-field">
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.help_text %}<p class="form-field__help">{{ field.help_text }}</p>{% endif %}
+        {% for error in field.errors %}<p class="form-field__error">{{ error }}</p>{% endfor %}
+      </div>
+    {% endfor %}
+    {% for error in form.non_field_errors %}<p class="form-field__error">{{ error }}</p>{% endfor %}
+    <div class="form-actions">
+      <button class="button button--primary" type="submit">Sign up</button>
+      <a class="button" href="{% url 'login' %}">Back to login</a>
+    </div>
   </form>
 </div>
 {% endblock %}
