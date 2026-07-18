@@ -374,3 +374,18 @@ input:focus-visible, textarea:focus-visible, select:focus-visible{
   color: var(--accent-contrast); font-weight: 600;
 }
 .pager .gap{ border-color: transparent; background: transparent; color: var(--muted); }
+
+/* === Version diff (P-016) === */
+.diff{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: .9rem; line-height: 1.5;
+  border: 1px solid var(--line); border-radius: .5rem; overflow: hidden;
+}
+.diff-row{ padding: .1rem .6rem; white-space: pre-wrap; word-break: break-word; }
+/* translucent overlays so they read on both dark and light panels */
+.diff-add{ background: rgba(64, 192, 87, .18); }
+.diff-del{ background: rgba(240, 80, 80, .18); }
+.diff-add::before{ content: "+ "; color: #40c057; }
+.diff-del::before{ content: "- "; color: #f05050; }
+.diff-same{ color: var(--muted); }
+.diff-same::before{ content: "\00a0\00a0"; }

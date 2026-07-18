@@ -42,6 +42,17 @@
             <div><strong>{{ v.title|default:"(empty)" }}</strong></div>
             <div class="pre muted">{{ v.content|default:"(empty)" }}</div>
           </div>
+          <!-- View changes (diff vs current) -->
+          <a class="button" href="{% url 'note_version_diff' note.pk v.pk %}">View changes</a>
+          <!-- Restore version form -->
+          <form method="post" action="{% url 'note_restore_version' note.pk v.pk %}" class="inline">
+            {% csrf_token %}
+            <button class="button" type="submit">Restore this version</button>
+          </form>
+          <!-- Send note form -->
+          <form method="get" action="{% url 'note_send' note.pk %}" class="inline">
+            <button class="button" type="submit">Send Note</button>
+          </form>
 
           <div class="history-item__actions">
             <form method="post" action="{% url 'note_restore_version' note.pk v.pk %}" class="inline">

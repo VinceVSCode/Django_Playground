@@ -20,6 +20,7 @@ urlpatterns = [
     path('notes/<int:pk>/toggle-pin/', v.note_toggle_pin, name='note_toggle_pin'), # Toggle pin status of a note
     path('notes/<int:pk>/toggle-archive/', v.note_toggle_archive, name='note_toggle_archive'), # Toggle archive status of a note
     path('notes/<int:pk>/versions/<int:version_id>/restore/', v.note_restore_version, name='note_restore_version'), # View note versions
+    path('notes/<int:pk>/versions/<int:version_id>/diff/', v.note_version_diff, name='note_version_diff'), # Diff a version vs current
 
     # HTML inbox/sent
     path('inbox/', v.inbox_list_view, name='inbox'), # View for inbox
