@@ -1,11 +1,23 @@
-{%extends "firstsite/base.html"%}
-{%block title%}Create Note{%endblock%}
-{%block content%}
-  <h2>Create a New Note</h2>
+{% extends "firstsite/base.html" %}
+{% block title %}Create Note{% endblock %}
+{% block content %}
+<div class="card card--narrow card--center">
+  <h1>Create a new note</h1>
   <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save</button>
-    <a href = "{% url 'note_lists' %}">Cancel</a>
+    {% for field in form %}
+      <div class="form-field">
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.help_text %}<p class="form-field__help">{{ field.help_text }}</p>{% endif %}
+        {% for error in field.errors %}<p class="form-field__error">{{ error }}</p>{% endfor %}
+      </div>
+    {% endfor %}
+    {% for error in form.non_field_errors %}<p class="form-field__error">{{ error }}</p>{% endfor %}
+    <div class="form-actions">
+      <button class="button button--primary" type="submit">Save</button>
+      <a class="button" href="{% url 'note_lists' %}">Cancel</a>
+    </div>
   </form>
-{%endblock%}
+</div>
+{% endblock %}

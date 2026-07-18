@@ -1,14 +1,15 @@
-
 {% extends "firstsite/base.html" %}
 {% block title %}Delete Tag{% endblock %}
 {% block content %}
-<div class="card" style="max-width:520px;">
-  <h2 style="margin-top:0;">Delete Tag</h2>
+<div class="card auth-card">
+  <h1>Delete tag</h1>
   <p>Delete “{{ tag.name }}”?</p>
   <form method="post">
     {% csrf_token %}
-    <button class="button" type="submit">Yes, delete</button>
-    <a class="button" href="{% url 'tag_list' %}">Cancel</a>
+    <div class="form-actions">
+      <button class="button button--danger" type="submit">Yes, delete</button>
+      <a class="button" href="{% url 'tag_list' %}">Cancel</a>
+    </div>
   </form>
 </div>
 {% endblock %}

@@ -1,255 +1,378 @@
-/* ===== Theme (low brightness, neutral) ===== */
+/* ============================================================
+   Django Playground UI — implements wiki/FRONTEND_IDEAS.md
+   3 color families: neutral bg, neutral text, indigo accent.
+   (--danger is the sole semantic exception, destructive only.)
+   Dark is the default theme; light overrides at the bottom
+   of the token block. Keep both themes in sync.
+   ============================================================ */
+
+/* ===== Tokens ===== */
 :root{
-  --bg: #15181f;           /* slightly lighter than before */
-  --panel: #1b1f27;        /* panels/cards */
-  --panel-strong: #222734; /* hovers/strong panels */
-  --text: #e9ecf3;         /* comfortable off-white */
-  --muted: #a6afbd;        /* muted text */
-  --line: #2b3140;         /* separators */
-  --focus: #8fb7ff;        /* focus ring */
-  --chip: #212633;
-  --chip-line: #2e3542;
+  --bg: #15181f;
+  --panel: #1b1f27;
+  --panel-strong: #222734;
+  --line: #2b3140;
+
+  --text: #e9ecf3;
+  --muted: #a6afbd;
+
+  --accent: #7c93f7;
+  --accent-strong: #5b7cfa;
+  --accent-soft: rgba(124,147,247,.14);
+  --accent-contrast: #0f1320;
+  --focus: var(--accent);
+
+  --danger: #e2707a;
+  --danger-soft: rgba(226,112,122,.12);
+
+  --shadow: 0 8px 20px rgba(0,0,0,.25);
+  --shadow-lift: 0 12px 26px rgba(0,0,0,.32);
+
+  --radius: 10px;
+  --radius-sm: 8px;
 }
 
-html, body { background: var(--bg); color: var(--text); }
-
-
-
-/* ===== Topbar ===== */
-/* topbar */
-.topbar{
-  position: sticky; top: 0; z-index: 10;
-  display: flex; justify-content: space-between;
-  align-items: center;
-  gap: 1rem; padding: .75rem 1rem;
-  background: rgba(23,26,33,.85);
-  backdrop-filter: blur(6px);
-  border-bottom: 1px solid var(--line);
-}
-.topbar { flex-wrap: nowrap; }
-.topbar__nav{ display:flex; gap:.5rem; }
-.inline { display: inline-flex; align-items: center; }          /* used by the logout <form> */
-.topbar__right { display: flex; align-items: center; gap: .75rem; }
-
-.topbar__link{
-  padding:.4rem .6rem; border-radius:.5rem;
-  color: var(--text); text-decoration: none;
-}
-.topbar__link:hover{ background: var(--panel-strong); }
-.topbar__link:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
-.topbar__user{ color: var(--muted); font-size:.95rem; }
-
-/* logo placeholder (empty for now) */
-.logo-slot{
-  width: 28px; height: 28px; border-radius: .5rem;
-  background: var(--panel-strong);
-  border: 1px dashed var(--line);
-}
-
-/* button with inline icon */
-.button--icon { display:inline-flex; align-items:center; gap:.4rem; }
-.button--icon svg { display:inline-block; width:16px; height:16px; }
-
-/* ===== Page/content wrappers ===== */
-.page{ padding: 1rem; }
-
-.card{
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: .8rem;
-  padding: 1rem;
-  box-shadow: 0 10px 24px rgba(0,0,0,.25);
-}
-.muted{ color: var(--muted); }
-.button{
-  display:inline-block; padding:.5rem .8rem; border-radius:.6rem;
-  background: var(--panel-strong);
-  border:1px solid var(--line); color: var(--text);
-  text-decoration:none; cursor:pointer;
-}
-.button:hover{ background: #202632; }
-.button:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
-
-/* ===== Filter bar ===== */
-/* Filter bar: subtle card wrapper */
-.filter-bar{
-  display:flex; align-items:flex-end; gap:1rem; flex-wrap:wrap;
-  border:1px solid var(--line);
-  border-radius:.8rem;
-  background: var(--panel);
-  padding:.75rem;
-  margin-bottom: 1rem;
-}
-.filter-bar label{ color: var(--muted); font-size:.9rem; }
-.filter-actions{ display:flex; gap:.5rem; }
-
-/* ===== Notes grid ===== */
-.notes-grid{
-  gap: 1.1rem;
-}
-/* Notes grid + card styles */
-/* clearer card boundary + very subtle gradient for depth */
-.note-card{
-  background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(0,0,0,0.02)) var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 12px;                 /* slightly rounder */
-  padding: .85rem 1rem;
-  box-shadow: 0 10px 20px rgba(0,0,0,.28); /* a bit stronger */
-  transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease;
-}
-
-/* subtle zebra striping so adjacent cards read as separate */
-.notes-grid > article:nth-child(odd){
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.03)) var(--panel-strong);
-}
-
-/* gentle lift on hover/focus to signal separation */
-.note-card:hover,
-.note-card:focus-within{
-  transform: translateY(-2px);
-  border-color: #3a4253;              /* slightly brighter edge */
-  box-shadow: 0 14px 28px rgba(0,0,0,.35);
-}
-
-/* clearer title hierarchy */
-.note-card__title{
-  margin: .2rem 0 .5rem;
-  font-weight: 650;
-  font-size: 1.05rem;
-}
-
-/* make the link inside cards look like a title, not a nav chip */
-.note-card .topbar__link{
-  padding: 0;                          /* remove nav padding */
-  border-radius: 0;
-  text-decoration: none;
-}
-.note-card .topbar__link:hover{
-  text-decoration: underline;
-  background: transparent;             /* no hover block in cards */
-}
-
-/* meta row spacing */
-.note-card__meta{
-  margin-bottom: .25rem;
-}
-
-/* pin/archive badges: slightly higher contrast so they read quickly */
-.note-pin{
-  background: #262e3d;
-  border-color: #394357;
-  color: #b8c1d1;
-}
-
-/* tag chips slightly tighter so groups don’t blur together */
-.chips{ gap: .35rem; }
-.chip{
-  padding: .18rem .55rem;
-  font-size: .84rem;
-  background: var(--chip);
-  border: 1px solid var(--chip-line);
-}
-
-/* ===== Tables (analytics) ===== */
-.analytics-table { width:100%; border-collapse:separate; border-spacing:0 .4rem; }
-.analytics-table th, .analytics-table td { padding: .25rem .5rem; }
-.analytics-bar{
-  display:inline-block; height:.75rem; max-width:240px;
-  background: #1f2a3c; border:1px solid var(--chip-line); border-radius:6px; vertical-align:middle;
-}
-.analytics-bar-value{ margin-left:.4rem; font-size:.9em; color: var(--muted); }
-
-/* === Light theme overrides (activated when <html data-theme="light">) === */
 :root[data-theme="light"]{
   --bg: #f6f7fb;
   --panel: #ffffff;
-  --panel-strong: #f1f3f8;
+  --panel-strong: #eef0f6;
+  --line: #d8deea;
+
   --text: #1b2430;
   --muted: #5b6472;
-  --line: #d8deea;
-  --focus: #2b6fff;
 
-  --chip: #eef2fb;
-  --chip-line: #d7e1f7;
+  --accent: #4d68e8;
+  --accent-strong: #3a55d9;
+  --accent-soft: rgba(77,104,232,.10);
+  --accent-contrast: #ffffff;
+
+  --danger: #c0313f;
+  --danger-soft: rgba(192,49,63,.08);
+
+  --shadow: 0 8px 20px rgba(20,30,60,.07);
+  --shadow-lift: 0 12px 26px rgba(20,30,60,.11);
 }
 
-/* Topbar background should be subtle in light mode */
-:root[data-theme="light"] .topbar{
-  background: rgba(255,255,255,.9);
-  border-bottom: 1px solid var(--line);
-  backdrop-filter: blur(6px);
+/* ===== Base ===== */
+*, *::before, *::after{ box-sizing: border-box; }
+
+html, body{
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 1rem;
+  line-height: 1.55;
 }
 
-/* Buttons in light mode (slightly darker text on light bg) */
-:root[data-theme="light"] .button{
+h1{ font-size: 1.5rem;  font-weight: 600; margin: 0 0 .5rem; }
+h2{ font-size: 1.25rem; font-weight: 600; margin: 0 0 .5rem; }
+h3{ font-size: 1.05rem; font-weight: 600; margin: 0 0 .5rem; }
+
+a{ color: var(--accent); }
+
+small, .small{ font-size: .85rem; }
+.muted{ color: var(--muted); }
+
+.pre{ white-space: pre-wrap; }
+
+:focus-visible{ outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ===== Form controls (global, covers Django-rendered fields) ===== */
+input[type="text"], input[type="search"], input[type="email"],
+input[type="password"], input[type="date"], input[type="number"],
+textarea, select{
+  background: var(--panel-strong);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: .45rem .6rem;
+  font: inherit;
+  max-width: 100%;
+}
+textarea{ width: 100%; min-height: 8rem; resize: vertical; }
+input::placeholder{ color: var(--muted); }
+input[type="checkbox"]{
+  width: 1rem; height: 1rem; vertical-align: middle;
+  accent-color: var(--accent);
+}
+input:focus-visible, textarea:focus-visible, select:focus-visible{
+  outline: 2px solid var(--focus); outline-offset: 1px;
+  border-color: var(--accent);
+}
+
+.form-field{ display: flex; flex-direction: column; gap: .25rem; margin-bottom: .75rem; }
+.form-field label{ color: var(--muted); font-size: .9rem; }
+.form-field__error{ color: var(--danger); font-size: .85rem; margin: 0; }
+.form-field__help{ color: var(--muted); font-size: .8rem; margin: 0; }
+.form-actions{ display: flex; gap: .5rem; align-items: center; margin-top: 1rem; flex-wrap: wrap; }
+
+/* Django error lists inside forms (fallback for as_p style rendering) */
+.errorlist{ color: var(--danger); font-size: .85rem; margin: .25rem 0; padding-left: 1rem; }
+
+/* ===== Buttons ===== */
+.button{
+  display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+  padding: .45rem .8rem;
+  border-radius: var(--radius-sm);
   background: var(--panel-strong);
   border: 1px solid var(--line);
   color: var(--text);
+  font: inherit; font-weight: 600; font-size: .92rem;
+  text-decoration: none; cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+}
+.button:hover{ border-color: var(--accent); }
+
+.button--primary{
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  color: var(--accent-contrast);
+}
+.button--primary:hover{ background: var(--accent); border-color: var(--accent); }
+
+.button--danger{
+  background: transparent;
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.button--danger:hover{ background: var(--danger-soft); border-color: var(--danger); }
+
+.button--ghost{
+  background: transparent;
+  border-color: transparent;
+  color: var(--muted);
+}
+.button--ghost:hover{ background: var(--accent-soft); border-color: transparent; color: var(--text); }
+
+.button--icon svg{ display: inline-block; width: 16px; height: 16px; }
+
+.inline{ display: inline-flex; align-items: center; gap: .5rem; margin: 0; }
+
+/* ===== Topbar ===== */
+.topbar{
+  position: sticky; top: 0; z-index: 10;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap;
+  gap: .5rem 1rem; padding: .6rem 1rem;
+  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--line);
+}
+.topbar__left{ display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+.topbar__nav{ display: flex; gap: .25rem; flex-wrap: wrap; align-items: center; }
+.topbar__right{ display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+
+.topbar__link{
+  padding: .4rem .6rem; border-radius: var(--radius-sm);
+  color: var(--text); text-decoration: none; font-size: .95rem;
+}
+.topbar__link:hover{ background: var(--accent-soft); }
+.topbar__link--active{
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+.topbar__user{ color: var(--muted); font-size: .9rem; }
+
+.logo-slot{
+  width: 28px; height: 28px; border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  border: 1px dashed var(--accent);
+  flex: none;
 }
 
-/* Cards in light mode */
-:root[data-theme="light"] .card{
+/* ===== Page wrapper ===== */
+.page{ max-width: 1100px; margin: 0 auto; padding: 1.25rem 1rem 3rem; }
+
+/* ===== Cards ===== */
+.card{
   background: var(--panel);
   border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  box-shadow: var(--shadow);
 }
 
-/* Note cards in light mode */
-:root[data-theme="light"] .note-card{
-  background: linear-gradient(180deg, rgba(0,0,0,0.02), rgba(0,0,0,0.01)) var(--panel);
+.page-header{ margin-bottom: 1rem; }
+.page-header p{ margin: .25rem 0 0; }
+
+.section-gap{ margin-top: 1rem; }
+
+/* ===== Flash messages ===== */
+.messages{ max-width: 1100px; margin: .75rem auto 0; padding: 0 1rem; }
+.message{
   border: 1px solid var(--line);
-  box-shadow: 0 10px 20px rgba(0,0,0,.07);
+  border-left: 3px solid var(--accent);
+  background: var(--panel);
+  border-radius: var(--radius-sm);
+  padding: .5rem .8rem;
+  margin-bottom: .5rem;
 }
-:root[data-theme="light"] .notes-grid > article:nth-child(odd){
-  background: linear-gradient(180deg, rgba(0,0,0,0.03), rgba(0,0,0,0.015)) var(--panel-strong);
+.message--success, .message--info{
+  background: var(--accent-soft);
+  border-left-color: var(--accent);
+}
+.message--error, .message--warning{
+  background: var(--danger-soft);
+  border-left-color: var(--danger);
 }
 
-/* Links inside cards should not look like nav chips */
-:root[data-theme="light"] .note-card .topbar__link:hover{
-  text-decoration: underline;
-  background: transparent;
+/* ===== Empty state ===== */
+.empty-state{
+  text-align: center;
+  padding: 2.5rem 1rem;
+}
+.empty-state p{ margin: 0 0 1rem; }
+
+/* ===== Filter bar ===== */
+.filter-bar{
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  padding: .75rem .9rem;
+  margin-bottom: 1rem;
+}
+.filter-bar form{
+  display: flex; align-items: flex-end; gap: .6rem 1rem; flex-wrap: wrap;
+}
+.filter-bar .form-field{ margin-bottom: 0; }
+.filter-bar .form-field--checkbox{
+  flex-direction: row; align-items: center; gap: .4rem; padding-bottom: .5rem;
+}
+.filter-actions{ display: flex; gap: .5rem; align-items: center; margin-left: auto; }
+
+/* ===== Notes grid ===== */
+.notes-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
 }
 
-/* --- form controls inside filter bar --- */
-.filter-bar input[type="text"],
-.filter-bar input[type="date"],
-.filter-bar select {
+.note-card{
+  display: flex; flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: .85rem 1rem;
+  box-shadow: var(--shadow);
+  transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease;
+}
+.note-card:hover, .note-card:focus-within{
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-lift);
+}
+
+.note-card__meta{
+  display: flex; align-items: center; gap: .4rem; flex-wrap: wrap;
+  color: var(--muted); font-size: .82rem;
+  margin-bottom: .35rem;
+}
+
+.note-card__title{ margin: 0 0 .35rem; font-size: 1.05rem; font-weight: 600; }
+.note-card__title-link{ color: var(--text); text-decoration: none; }
+.note-card__title-link:hover{ color: var(--accent); text-decoration: underline; }
+
+.note-card__excerpt{ color: var(--muted); font-size: .92rem; }
+
+.note-card__actions{
+  display: flex; gap: .35rem; flex-wrap: wrap; align-items: center;
+  margin-top: auto; padding-top: .7rem;
+}
+
+/* ===== Chips ===== */
+.chips{ display: flex; gap: .35rem; flex-wrap: wrap; margin-top: .5rem; }
+.chip{
+  display: inline-block;
+  padding: .15rem .6rem;
+  font-size: .8rem;
+  border-radius: 999px;
   background: var(--panel-strong);
-  color: var(--text);
   border: 1px solid var(--line);
-  border-radius: .5rem;
-  padding: .4rem .5rem;
-  min-width: 10rem;
+  color: var(--muted);
+}
+.chip--status{
+  background: var(--accent-soft);
+  border-color: transparent;
+  color: var(--accent);
+  font-weight: 600;
+}
+/* legacy alias used by some templates */
+.tagpill{
+  display: inline-block; padding: .15rem .6rem; font-size: .8rem;
+  border-radius: 999px; background: var(--panel-strong);
+  border: 1px solid var(--line); color: var(--muted);
 }
 
-.filter-bar input[type="text"]::placeholder { color: var(--muted); }
-
-.filter-bar input[type="checkbox"] {
-  width: 1rem; height: 1rem; vertical-align: middle;
-  accent-color: var(--focus);
+/* ===== Item lists (inbox / sent / tags) ===== */
+.item-list{ list-style: none; margin: 0; padding: 0; }
+.item-row{
+  display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  padding: .65rem .25rem;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
 }
+.item-row:last-child{ border-bottom: none; }
+.item-row__main{ min-width: 0; }
+.item-row__meta{ color: var(--muted); font-size: .85rem; white-space: nowrap; }
+.item-row__actions{ display: flex; gap: .35rem; }
 
-.filter-bar input:focus-visible,
-.filter-bar select:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
-  border-color: var(--focus);
+/* ===== History timeline (note detail) ===== */
+.history-list{ list-style: none; margin: 0; padding: 0; }
+.history-item{
+  border-left: 2px solid var(--line);
+  padding: .25rem 0 .9rem 1rem;
+  position: relative;
 }
+.history-item::before{
+  content: "";
+  position: absolute; left: -5px; top: .55rem;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent);
+}
+.history-item__head{ display: flex; gap: .5rem; align-items: baseline; flex-wrap: wrap; }
+.history-item__body{ margin: .35rem 0 .5rem; }
+.history-item__actions{ display: flex; gap: .4rem; flex-wrap: wrap; }
 
-/* keep "Apply" / "Reset" aligned */
-.filter-actions { display:flex; gap:.5rem; align-items:center; }
+/* ===== Detail page ===== */
+.detail-header{ display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin-bottom: .25rem; }
+.detail-header h1{ margin: 0; }
+.detail-actions{ display: flex; gap: .4rem; flex-wrap: wrap; margin-top: 1rem; }
 
+/* ===== Auth ===== */
+.auth-card{ max-width: 420px; margin: 2.5rem auto; }
+.card--narrow{ max-width: 560px; }
+.card--center{ margin-left: auto; margin-right: auto; }
 
-/* === Pager styling === */
+/* ===== Analytics ===== */
+.table-scroll{ overflow-x: auto; }
+.analytics-table{ width: 100%; border-collapse: separate; border-spacing: 0 .35rem; }
+.analytics-table th{ text-align: left; color: var(--muted); font-size: .88rem; font-weight: 600; }
+.analytics-table th, .analytics-table td{ padding: .25rem .5rem; }
+.analytics-bar{
+  display: inline-block; height: .75rem; max-width: 240px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: 6px; vertical-align: middle;
+}
+.analytics-bar-value{ margin-left: .4rem; font-size: .88em; color: var(--muted); }
+
+/* ===== Pager ===== */
 .pager{
-  display:flex; flex-wrap: wrap; gap: .35rem; justify-content: center; margin-top: 1rem;
+  display: flex; flex-wrap: wrap; gap: .35rem; justify-content: center; margin-top: 1.25rem;
 }
 .pager a, .pager span{
-  display:inline-block; padding: .35rem .6rem; border: 1px solid var(--line);
-  border-radius: .55rem; background: var(--panel); color: var(--text);
+  display: inline-block; padding: .35rem .6rem;
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--panel); color: var(--text);
   text-decoration: none; min-width: 2rem; text-align: center;
 }
-.pager a:hover{ background: var(--panel-strong); }
-.pager .current{ background: var(--panel-strong); border-color: #3a4253; font-weight: 600; }
+.pager a:hover{ border-color: var(--accent); }
+.pager .current{
+  background: var(--accent-strong); border-color: var(--accent-strong);
+  color: var(--accent-contrast); font-weight: 600;
+}
 .pager .gap{ border-color: transparent; background: transparent; color: var(--muted); }
 
 /* === Version diff (P-016) === */

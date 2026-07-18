@@ -1,181 +1,175 @@
 {% extends "firstsite/base.html" %}
-{%load qsp %}
+{% load qsp %}
 {% block title %}Your Notes{% endblock %}
 
 {% block content %}
-  <div class="card" style="margin-bottom:1rem;">
-    <h1 style="margin:0;">Your Notes</h1>
-    <p class="muted" style="margin:.25rem 0 0;">View, filter, and manage your notes.</p>
-  </div>
+<div class="page-header">
+  <h1>Your Notes</h1>
+  <p class="muted">View, filter, and manage your notes.</p>
+</div>
+
 <div class="filter-bar">
-  <form method="get" style="display:flex; gap:1rem; flex-wrap:wrap; align-items:end; width:100%;">
-    <input type="text" name="search" placeholder="Search…" value="{{ values.search|default:'' }}" />
+  <form method="get">
+    <div class="form-field">
+      <label for="f-search">Search</label>
+      <input id="f-search" type="text" name="search" placeholder="Search…" value="{{ values.search|default:'' }}" />
+    </div>
 
-    <select name="tag">
-      <option value="">— All tags —</option>
-      {% for t in tags %}
-        <option value="{{ t.id }}" {% if values.tag == t.id|stringformat:"s" %}selected{% endif %}>{{ t.name }}</option>
-      {% endfor %}
-    </select>
+    <div class="form-field">
+      <label for="f-tag">Tag</label>
+      <select id="f-tag" name="tag">
+        <option value="">All tags</option>
+        {% for t in tags %}
+          <option value="{{ t.id }}" {% if values.tag == t.id|stringformat:"s" %}selected{% endif %}>{{ t.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
 
-    <label>
-      <input type="checkbox" name="untagged" value="1" {% if values.untagged == '1' %}checked{% endif %}/>
-      Untagged only
-    </label>
+    <div class="form-field form-field--checkbox">
+      <input id="f-untagged" type="checkbox" name="untagged" value="1" {% if values.untagged == '1' %}checked{% endif %}/>
+      <label for="f-untagged">Untagged only</label>
+    </div>
 
-    <label>
-      Pinned:
-      <select name="pinned">
+    <div class="form-field">
+      <label for="f-pinned">Pinned</label>
+      <select id="f-pinned" name="pinned">
         <option value="">All</option>
         <option value="1" {% if values.pinned == '1' %}selected{% endif %}>Yes</option>
         <option value="0" {% if values.pinned == '0' %}selected{% endif %}>No</option>
       </select>
-    </label>
+    </div>
 
-    <label>
-      Archived:
-      <select name="archived">
+    <div class="form-field">
+      <label for="f-archived">Archived</label>
+      <select id="f-archived" name="archived">
         <option value="">All</option>
         <option value="0" {% if values.archived == '0' %}selected{% endif %}>No</option>
         <option value="1" {% if values.archived == '1' %}selected{% endif %}>Yes</option>
       </select>
-    </label>
-    <label>
-      Date field:
-      <select name="date_field">
+    </div>
+
+    <div class="form-field">
+      <label for="f-date-field">Date field</label>
+      <select id="f-date-field" name="date_field">
         <option value="updated" {% if values.date_field == 'updated' or not values.date_field %}selected{% endif %}>Updated</option>
         <option value="created" {% if values.date_field == 'created' %}selected{% endif %}>Created</option>
       </select>
-    </label>
+    </div>
 
-    <label>
-      From:
-      <input type="date" name="from" value="{{ values.from|default:'' }}">
-    </label>
+    <div class="form-field">
+      <label for="f-from">From</label>
+      <input id="f-from" type="date" name="from" value="{{ values.from|default:'' }}">
+    </div>
 
-    <label>
-      To:
-      <input type="date" name="to" value="{{ values.to|default:'' }}">
-    </label>
+    <div class="form-field">
+      <label for="f-to">To</label>
+      <input id="f-to" type="date" name="to" value="{{ values.to|default:'' }}">
+    </div>
 
-    <label>
-      Sort by:
-      <select name="sort">
+    <div class="form-field">
+      <label for="f-sort">Sort by</label>
+      <select id="f-sort" name="sort">
         <option value="updated" {% if values.sort == 'updated' or not values.sort %}selected{% endif %}>Updated</option>
         <option value="created" {% if values.sort == 'created' %}selected{% endif %}>Created</option>
         <option value="title"   {% if values.sort == 'title' %}selected{% endif %}>Title</option>
       </select>
-    </label>
+    </div>
 
-    <label>
-      Direction:
-      <select name="dir">
+    <div class="form-field">
+      <label for="f-dir">Direction</label>
+      <select id="f-dir" name="dir">
         <option value="desc" {% if values.dir == 'desc' or not values.dir %}selected{% endif %}>Desc</option>
         <option value="asc"  {% if values.dir == 'asc' %}selected{% endif %}>Asc</option>
       </select>
-    </label>
-
+    </div>
 
     <div class="filter-actions">
-    <button class="button" type="submit">Apply</button>
-    <a class="button" href="{% url 'note_lists' %}">Reset</a>
-  </div>
-
+      <button class="button button--primary" type="submit">Apply</button>
+      <a class="button" href="{% url 'note_lists' %}">Reset</a>
+    </div>
   </form>
 </div>
 
-{% if not page_obj.object_list %}
-  <div class="card" style="text-align:center;">
-    <p class="muted">No notes match your filters.</p>
-    <p><a class="button" href="{% url 'create_note' %}">Create your first note</a></p>
-  </div>
-{% endif %}
-
 {% if page_obj.object_list %}
-<div class="notes-grid">
+  <div class="notes-grid">
     {% for note in page_obj.object_list %}
       <article class="note-card">
         <div class="note-card__meta">
-          {% if note.is_pinned %}<span class="note-pin">Pinned</span>{% endif %}
-          {% if note.is_archived %}<span class="note-pin">Archived</span>{% endif %}
+          {% if note.is_pinned %}<span class="chip chip--status">Pinned</span>{% endif %}
+          {% if note.is_archived %}<span class="chip chip--status">Archived</span>{% endif %}
           <span>Updated {{ note.updated_at|date:"Y-m-d H:i" }}</span>
         </div>
 
         <h3 class="note-card__title">
-          <a href="{% url 'note_detail' note.pk %}" class="topbar__link">{{ note.title }}</a>
+          <a href="{% url 'note_detail' note.pk %}" class="note-card__title-link">{{ note.title }}</a>
         </h3>
 
-        <div class="muted">{{ note.content|truncatechars:120 }}</div>
+        <div class="note-card__excerpt">{{ note.content|truncatechars:120 }}</div>
 
         {% if note.tags.exists %}
-          <div class="chips" style="margin-top:.4rem;">
+          <div class="chips">
             {% for tag in note.tags.all %}
               <span class="chip">{{ tag.name }}</span>
             {% endfor %}
           </div>
         {% endif %}
 
-        <div style="margin-top:.6rem; display:flex; gap:.4rem; flex-wrap:wrap;">
-          <!-- Buttons for note actions -->
-          <a class="button" href="{% url 'note_detail' note.pk %}">View</a>
+        <div class="note-card__actions">
           <a class="button" href="{% url 'note_edit' note.pk %}">Edit</a>
-          <a class="button" href="{% url 'note_delete' note.pk %}">Delete</a>
           <a class="button" href="{% url 'note_send' note.pk %}">Send</a>
 
           <form action="{% url 'note_toggle_pin' note.pk %}" method="post" class="inline">
             {% csrf_token %}
             <input type="hidden" name="next" value="{{ request.get_full_path }}">
-            <button class="button" type="submit">{% if note.is_pinned %}Unpin{% else %}Pin{% endif %}</button>
+            <button class="button button--ghost" type="submit">{% if note.is_pinned %}Unpin{% else %}Pin{% endif %}</button>
           </form>
 
           <form action="{% url 'note_toggle_archive' note.pk %}" method="post" class="inline">
             {% csrf_token %}
             <input type="hidden" name="next" value="{{ request.get_full_path }}">
-            <button class="button" type="submit">{% if note.is_archived %}Restore{% else %}Archive{% endif %}</button>
+            <button class="button button--ghost" type="submit">{% if note.is_archived %}Restore{% else %}Archive{% endif %}</button>
           </form>
+
+          <a class="button button--danger" href="{% url 'note_delete' note.pk %}">Delete</a>
         </div>
       </article>
     {% endfor %}
   </div>
 
-  {# --- numbered pager goes here (next step) --- #}
-{% if page_obj.paginator.num_pages > 1 %}
-  <nav class="pager" aria-label="Pagination">
-    {# Previous #}
-    {% if page_obj.has_previous %}
-      <a href="?{% qs_keep page=page_obj.previous_page_number %}" aria-label="Previous page">«</a>
-    {% else %}
-      <span class="gap" aria-hidden="true">«</span>
-    {% endif %}
-
-    {# Page numbers (compact: show first, last, neighbors) #}
-    {% for num in page_obj.paginator.page_range %}
-      {% if num == 1 or num == page_obj.paginator.num_pages or num|add:'-1' == page_obj.number or num == page_obj.number or num|add:'1' == page_obj.number %}
-        {% if num == page_obj.number %}
-          <span class="current" aria-current="page">{{ num }}</span>
-        {% else %}
-          <a href="?{% qs_keep page=num %}">{{ num }}</a>
-        {% endif %}
-      {% elif num == 2 and page_obj.number > 3 %}
-        <span class="gap">…</span>
-      {% elif num == page_obj.paginator.num_pages|add:'-1' and page_obj.number < page_obj.paginator.num_pages|add:'-2' %}
-        <span class="gap">…</span>
+  {% if page_obj.paginator.num_pages > 1 %}
+    <nav class="pager" aria-label="Pagination">
+      {% if page_obj.has_previous %}
+        <a href="?{% qs_keep page=page_obj.previous_page_number %}" aria-label="Previous page">«</a>
+      {% else %}
+        <span class="gap" aria-hidden="true">«</span>
       {% endif %}
-    {% endfor %}
 
-    {# Next #}
-    {% if page_obj.has_next %}
-      <a href="?{% qs_keep page=page_obj.next_page_number %}" aria-label="Next page">»</a>
-    {% else %}
-      <span class="gap" aria-hidden="true">»</span>
-    {% endif %}
-  </nav>
-{% endif %}
+      {% for num in page_obj.paginator.page_range %}
+        {% if num == 1 or num == page_obj.paginator.num_pages or num|add:'-1' == page_obj.number or num == page_obj.number or num|add:'1' == page_obj.number %}
+          {% if num == page_obj.number %}
+            <span class="current" aria-current="page">{{ num }}</span>
+          {% else %}
+            <a href="?{% qs_keep page=num %}">{{ num }}</a>
+          {% endif %}
+        {% elif num == 2 and page_obj.number > 3 %}
+          <span class="gap">…</span>
+        {% elif num == page_obj.paginator.num_pages|add:'-1' and page_obj.number < page_obj.paginator.num_pages|add:'-2' %}
+          <span class="gap">…</span>
+        {% endif %}
+      {% endfor %}
 
-
-
+      {% if page_obj.has_next %}
+        <a href="?{% qs_keep page=page_obj.next_page_number %}" aria-label="Next page">»</a>
+      {% else %}
+        <span class="gap" aria-hidden="true">»</span>
+      {% endif %}
+    </nav>
+  {% endif %}
 {% else %}
-  <p>No notes match your filters.</p>
+  <div class="card empty-state">
+    <p class="muted">No notes match your filters.</p>
+    <a class="button button--primary" href="{% url 'create_note' %}">Create your first note</a>
+  </div>
 {% endif %}
 
 {% endblock %}

@@ -3,14 +3,15 @@
 <!doctype html>
 <html lang="en"><head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Not found</title>
   <link rel="stylesheet" href="{% static 'firstsite/styles.css' %}">
 </head><body>
-  <div class="container">
-    <div class="card" style="margin-top:2rem;text-align:center;">
+  <main class="page">
+    <div class="card auth-card empty-state">
       <h1>404</h1>
       <p class="muted">The requested page was not found.</p>
-      <p><a class="button" href="{% url 'note_lists' %}">Back to your notes</a></p>
+      <a class="button button--primary" href="{% url 'note_lists' %}">Back to your notes</a>
     </div>
-  </div>
+  </main>
 </body></html>
