@@ -12,6 +12,9 @@ class NoteForm(forms.ModelForm):
     class Meta:
         model = Note
         fields = ["title", "content",  "is_pinned", "is_archived","tags"]
+        help_texts = {
+            "content": "Markdown supported: **bold**, *italic*, # headings, - lists, `code`, [links](https://…).",
+        }
     def __init__(self, *args, **kwargs):
         # Extract the user from kwargs
         user = kwargs.pop('user', None)
