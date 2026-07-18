@@ -118,19 +118,26 @@
           <a class="button" href="{% url 'note_edit' note.pk %}">Edit</a>
           <a class="button" href="{% url 'note_send' note.pk %}">Send</a>
 
-          <form action="{% url 'note_toggle_pin' note.pk %}" method="post" class="inline">
-            {% csrf_token %}
-            <input type="hidden" name="next" value="{{ request.get_full_path }}">
-            <button class="button button--ghost" type="submit">{% if note.is_pinned %}Unpin{% else %}Pin{% endif %}</button>
-          </form>
+          <!-- Low-frequency actions live in a ⋯ menu (ui.js); without JS they render inline as before -->
+          <div class="card-menu">
+            <button class="button button--ghost card-menu__toggle" type="button"
+                    aria-haspopup="true" aria-expanded="false" aria-label="More actions">⋯</button>
+            <div class="card-menu__list" role="menu">
+              <form action="{% url 'note_toggle_pin' note.pk %}" method="post" class="inline">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button class="button button--ghost" type="submit" role="menuitem">{% if note.is_pinned %}Unpin{% else %}Pin{% endif %}</button>
+              </form>
 
-          <form action="{% url 'note_toggle_archive' note.pk %}" method="post" class="inline">
-            {% csrf_token %}
-            <input type="hidden" name="next" value="{{ request.get_full_path }}">
-            <button class="button button--ghost" type="submit">{% if note.is_archived %}Restore{% else %}Archive{% endif %}</button>
-          </form>
+              <form action="{% url 'note_toggle_archive' note.pk %}" method="post" class="inline">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button class="button button--ghost" type="submit" role="menuitem">{% if note.is_archived %}Restore{% else %}Archive{% endif %}</button>
+              </form>
 
-          <a class="button button--danger" href="{% url 'note_delete' note.pk %}">Delete</a>
+              <a class="button button--danger" href="{% url 'note_delete' note.pk %}" role="menuitem">Delete…</a>
+            </div>
+          </div>
         </div>
       </article>
     {% endfor %}

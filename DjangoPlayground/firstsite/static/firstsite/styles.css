@@ -389,3 +389,68 @@ input:focus-visible, textarea:focus-visible, select:focus-visible{
 .diff-del::before{ content: "- "; color: #f05050; }
 .diff-same{ color: var(--muted); }
 .diff-same::before{ content: "\00a0\00a0"; }
+
+/* ===== Toast flash messages (P-023 A) =====
+   ui.js moves server-rendered .message elements into a fixed
+   bottom-right stack; severity colors come from .message--* */
+.toast-stack{
+  position: fixed; bottom: 1rem; right: 1rem; z-index: 100;
+  display: flex; flex-direction: column; gap: .5rem;
+  max-width: 340px;
+}
+.toast{
+  display: flex; align-items: center; gap: .6rem;
+  margin: 0;
+  box-shadow: var(--shadow-lift);
+}
+.toast__close{
+  margin-left: auto;
+  background: none; border: none;
+  color: var(--muted); cursor: pointer;
+  font: inherit; font-size: 1rem; line-height: 1;
+  padding: 0 .2rem;
+}
+.toast__close:hover{ color: var(--text); }
+@media (prefers-reduced-motion: no-preference){
+  .toast{ animation: toast-in .25s ease; }
+  .toast--leaving{ animation: toast-out .25s ease forwards; }
+}
+/* reduced motion: no entry animation; exit still needs the
+   animationend event to fire, so use a zero-duration one */
+@media (prefers-reduced-motion: reduce){
+  .toast--leaving{ animation: toast-out 0.01s forwards; }
+}
+@keyframes toast-in{ from{ opacity: 0; transform: translateY(8px); } to{ opacity: 1; transform: none; } }
+@keyframes toast-out{ to{ opacity: 0; transform: translateY(8px); } }
+
+/* ===== Note-card "⋯" action menu (P-023 B) =====
+   Progressive enhancement: without JS the wrapped Pin/Archive/Delete
+   controls render inline exactly as before (the toggle stays hidden).
+   ui.js adds .js-enabled to <html>, which switches the list into a
+   dropdown behind the ⋯ button. */
+.card-menu{ position: relative; display: flex; gap: .35rem; align-items: center; }
+.card-menu__toggle{ display: none; }
+.card-menu__list{ display: flex; gap: .35rem; align-items: center; }
+
+.js-enabled .card-menu__toggle{ display: inline-flex; }
+.js-enabled .card-menu__list{
+  display: none;
+  position: absolute; right: 0; top: calc(100% + 4px); z-index: 20;
+  min-width: 160px;
+  flex-direction: column; align-items: stretch; gap: .1rem;
+  background: var(--panel);
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lift);
+  padding: .3rem;
+}
+.js-enabled .card-menu.open .card-menu__list{ display: flex; }
+/* inside the dropdown, buttons become full-width menu items */
+.js-enabled .card-menu__list form{ display: block; width: 100%; }
+.js-enabled .card-menu__list .button{
+  width: 100%; justify-content: flex-start;
+  background: none; border-color: transparent;
+  font-weight: 400;
+}
+.js-enabled .card-menu__list .button:hover{ background: var(--accent-soft); }
+.js-enabled .card-menu__list .button--danger{ color: var(--danger); }
+.js-enabled .card-menu__list .button--danger:hover{ background: var(--danger-soft); }
