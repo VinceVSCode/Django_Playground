@@ -107,6 +107,27 @@ Django_Playground/
    - Main application: http://127.0.0.1:8000/
    - Admin interface: http://127.0.0.1:8000/admin/
 
+## 🐳 Run with Docker
+
+A containerized dev setup is included (uses `settings_dev` and the Django dev server).
+
+```bash
+docker compose up --build     # build + start; app at http://localhost:8000
+```
+
+The SQLite database is stored on a named Docker volume (`dbdata`), so **your data
+persists across sessions**: `docker compose down` and a later `docker compose up`
+keep everything. Only `docker compose down -v` deletes the volume (and the data).
+
+Create an account through the sign-up page, or make a superuser:
+
+```bash
+docker compose exec web python manage.py createsuperuser
+```
+
+> Want the container and your local (non-Docker) runs to share one database file?
+> Swap the named volume for the bind-mount shown (commented) in `docker-compose.yml`.
+
 ## 🎮 Usage
 
 ### Web Interface

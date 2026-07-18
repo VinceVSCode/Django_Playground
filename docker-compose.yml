@@ -1,0 +1,27 @@
+# Simple dev container. Build & run:  docker compose up --build
+# Then open http://localhost:8000  (sign up a user via the UI, or:
+#   docker compose exec web python manage.py createsuperuser )
+#
+# Data persistence: the SQLite DB lives on the named volume `dbdata`, so it
+# survives `docker compose down` and later `up`. It is removed ONLY by
+# `docker compose down -v`.
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DJANGO_SETTINGS_MODULE: DjangoPlayground.settings_dev
+      # Store the SQLite file on the persistent volume (settings_base reads DB_NAME)
+      DB_NAME: /data/db.sqlite3
+      DJANGO_SECRET_KEY: dev-insecure-key
+      DJANGO_ALLOWED_HOSTS: 127.0.0.1,localhost
+    volumes:
+      - dbdata:/data
+      # --- Alternative: share ONE db file with your host instead of a named
+      # volume (bind-mount). Comment out the line above and uncomment below,
+      # and set DB_NAME to /app/DjangoPlayground/db.sqlite3:
+      # - ./DjangoPlayground:/app/DjangoPlayground
+
+volumes:
+  dbdata:
