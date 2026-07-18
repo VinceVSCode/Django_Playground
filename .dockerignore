@@ -1,0 +1,24 @@
+# Keep the build context small and the image clean.
+.venv/
+venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+*.log
+
+# Never bake a database or local secrets into the image
+**/db.sqlite3
+**/db.sqlite3-journal
+.env
+.env.*
+
+# Repo/tooling files not needed at runtime
+.git/
+.github/
+.gitignore
+wiki/
+**/tests/
+pytest.ini
+pytest_report.txt
+**/staticfiles/
