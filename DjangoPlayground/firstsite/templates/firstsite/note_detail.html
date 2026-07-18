@@ -40,6 +40,8 @@
             <div><strong>Title:</strong> {{ v.title|default:"(empty)" }}</div>
              <div class="pre">{{ v.content|default:"(empty)" }}</div>
           </div>
+          <!-- View changes (diff vs current) -->
+          <a class="button" href="{% url 'note_version_diff' note.pk v.pk %}">View changes</a>
           <!-- Restore version form -->
           <form method="post" action="{% url 'note_restore_version' note.pk v.pk %}" class="inline">
             {% csrf_token %}

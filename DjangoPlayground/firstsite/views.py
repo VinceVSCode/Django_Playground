@@ -1,3 +1,5 @@
+import difflib
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
@@ -260,6 +262,41 @@ def note_restore_version(request, pk, version_id):
     note.save(update_fields=['title', 'content', 'updated_at'])
     messages.success(request, "Version restored.")
     return redirect("note_detail", pk=note.pk)
+
+# Show what changed between a saved version and the current note.
+def _diff_rows(old_text, new_text):
+    """
+    Build a line-by-line diff between two blocks of text.
+    Returns a list of {'kind': 'add'|'del'|'same', 'text': str} for the template.
+    """
+    old_lines = (old_text or "").splitlines()
+    new_lines = (new_text or "").splitlines()
+    rows = []
+    for line in difflib.ndiff(old_lines, new_lines):
+        tag, text = line[:2], line[2:]
+        if tag == '+ ':
+            rows.append({'kind': 'add', 'text': text})
+        elif tag == '- ':
+            rows.append({'kind': 'del', 'text': text})
+        elif tag == '  ':
+            rows.append({'kind': 'same', 'text': text})
+        # '? ' hint lines from ndiff are intentionally skipped
+    return rows
+
+@login_required
+def note_version_diff(request, pk, version_id):
+    """
+    Show the differences between a saved version (old) and the current note (new).
+    """
+    note = get_object_or_404(Note, pk=pk, owner=request.user)
+    version = get_object_or_404(NoteVersion, pk=version_id, note=note)
+    ctx = {
+        'note': note,
+        'version': version,
+        'title_changed': version.title != note.title,
+        'content_rows': _diff_rows(version.content, note.content),
+    }
+    return render(request, 'firstsite/note_diff.html', ctx)
 
 # Tag views
 @login_required
