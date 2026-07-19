@@ -1,0 +1,46 @@
+{% extends "firstsite/base.html" %}
+{% block title %}Trash{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Trash</h1>
+  <p class="muted">Deleted notes are kept here. Restore them, or delete them permanently.</p>
+</div>
+
+{% if notes %}
+  <div class="card">
+    <p class="muted small">Permanent deletion cannot be undone.</p>
+    <form method="post" action="{% url 'trash_empty' %}" class="inline">
+      {% csrf_token %}
+      <button class="button button--danger" type="submit">Empty Trash</button>
+    </form>
+  </div>
+
+  <div class="card section-gap">
+    <ul class="item-list">
+      {% for note in notes %}
+        <li class="item-row">
+          <div class="item-row__main">
+            <div>{{ note.title }}</div>
+            <div class="item-row__meta">Deleted {{ note.deleted_at|date:"Y-m-d H:i" }}</div>
+          </div>
+          <div class="item-row__actions">
+            <form method="post" action="{% url 'note_restore' note.pk %}" class="inline">
+              {% csrf_token %}
+              <button class="button button--primary" type="submit">Restore</button>
+            </form>
+            <form method="post" action="{% url 'note_purge' note.pk %}" class="inline">
+              {% csrf_token %}
+              <button class="button button--danger" type="submit">Delete permanently</button>
+            </form>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% else %}
+  <div class="card empty-state">
+    <p class="muted">The Trash is empty.</p>
+    <a class="button button--primary" href="{% url 'note_lists' %}">Back to notes</a>
+  </div>
+{% endif %}
+{% endblock %}

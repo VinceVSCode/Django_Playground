@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
 from django.utils.dateparse import parse_date
+from django.utils import timezone
 from django.db.models import Q, Count
 from django.db.models.functions import TruncDay, TruncWeek, TruncMonth, TruncYear
 from .utils import attach_actor, log_note_event
@@ -224,22 +225,70 @@ def note_update_view(request, pk):
         form = NoteForm(instance=note, user=request.user)
     return render(request, "firstsite/edit_note.html", {"form": form, "note": note})
 
-# API endpoint to delete note
+# Move a note to the Trash (soft delete)
 @login_required
 def note_delete_view(request, pk):
     """
-    Confirm + delete flow with CSRF protection.
-    GET -> show confirmation, POST -> delete then redirect to list.
+    Confirm + soft-delete flow with CSRF protection.
+    GET -> show confirmation, POST -> move to Trash then redirect to list.
+    The row is kept (deleted_at is stamped); the Trash page can restore or purge it.
     """
     note = get_object_or_404(Note, pk=pk, owner=request.user)
     if request.method == "POST":
-        attach_actor(note, request.user)
-        note.delete()
-        # NoteEvent('delete') is logged automatically by the post_delete signal.
-        messages.success(request, "Note deleted successfully.")
-
+        note.deleted_at = timezone.now()
+        # Log the 'delete' event ourselves (identical to the old hard-delete
+        # analytics) and suppress the automatic post_save 'update'.
+        note._suppress_event = True
+        note.save(update_fields=["deleted_at", "updated_at"])
+        log_note_event(request.user, note, NoteEvent.ACTION_DELETE)
+        messages.success(request, "Note moved to Trash.")
         return redirect("note_lists")
     return render(request, "firstsite/confirm_delete.html", {"note": note})
+
+# Trash: list soft-deleted notes
+@login_required
+def trash_list_view(request):
+    notes = Note.all_objects.filter(
+        owner=request.user, deleted_at__isnull=False
+    ).order_by("-deleted_at")
+    return render(request, "firstsite/trash.html", {"notes": notes})
+
+# Restore a note from the Trash
+@login_required
+@require_POST
+def note_restore(request, pk):
+    note = get_object_or_404(
+        Note.all_objects, pk=pk, owner=request.user, deleted_at__isnull=False
+    )
+    note.deleted_at = None
+    note._suppress_event = True  # restore is not a content edit; don't log
+    note.save(update_fields=["deleted_at", "updated_at"])
+    messages.success(request, "Note restored.")
+    return redirect("trash")
+
+# Permanently delete a single note from the Trash
+@login_required
+@require_POST
+def note_purge(request, pk):
+    note = get_object_or_404(
+        Note.all_objects, pk=pk, owner=request.user, deleted_at__isnull=False
+    )
+    note._suppress_event = True  # already logged 'delete' when trashed
+    note.delete()
+    messages.success(request, "Note permanently deleted.")
+    return redirect("trash")
+
+# Empty the Trash: permanently delete every trashed note the user owns
+@login_required
+@require_POST
+def trash_empty(request):
+    count = 0
+    for note in Note.all_objects.filter(owner=request.user, deleted_at__isnull=False):
+        note._suppress_event = True
+        note.delete()
+        count += 1
+    messages.success(request, f"Trash emptied ({count} note{'s' if count != 1 else ''} deleted).")
+    return redirect("trash")
 
 # Note Restore Version
 @login_required

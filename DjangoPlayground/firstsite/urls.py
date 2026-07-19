@@ -26,6 +26,12 @@ urlpatterns = [
     path('inbox/', v.inbox_list_view, name='inbox'), # View for inbox
     path('sent/', v.sent_list_view, name='sent'), # View for sent notes
 
+    # Trash (soft delete)
+    path('trash/', v.trash_list_view, name='trash'),
+    path('trash/empty/', v.trash_empty, name='trash_empty'),
+    path('notes/<int:pk>/restore/', v.note_restore, name='note_restore'),
+    path('notes/<int:pk>/purge/', v.note_purge, name='note_purge'),
+
     # Tag views
     path('tags/', v.tag_list_view, name='tag_list'),
     path('tags/new/', v.tag_create_view, name='tag_create'),

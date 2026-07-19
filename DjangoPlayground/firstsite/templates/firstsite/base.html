@@ -21,6 +21,7 @@
           <a href="{% url 'sent' %}" class="topbar__link{% if active == 'sent' %} topbar__link--active{% endif %}" {% if active == 'sent' %}aria-current="page"{% endif %}>Sent</a>
           <a href="{% url 'tag_list' %}" class="topbar__link{% if active == 'tag_list' %} topbar__link--active{% endif %}" {% if active == 'tag_list' %}aria-current="page"{% endif %}>Tags</a>
           <a href="{% url 'analytics' %}" class="topbar__link{% if active == 'analytics' %} topbar__link--active{% endif %}" {% if active == 'analytics' %}aria-current="page"{% endif %}>Analytics</a>
+          <a href="{% url 'trash' %}" class="topbar__link{% if active == 'trash' %} topbar__link--active{% endif %}" {% if active == 'trash' %}aria-current="page"{% endif %}>Trash</a>
         {% endif %}
       </nav>
     </div>
