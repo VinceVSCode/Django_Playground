@@ -2,6 +2,15 @@ from django.db import models
 from django.contrib.auth.models import User
 # Create your models here.
 
+
+# Manager that hides soft-deleted (trashed) notes. This is the default manager,
+# so every existing `Note.objects...` query excludes trashed notes automatically.
+# Use `Note.all_objects` to reach trashed notes (the Trash page, restore, purge).
+class ActiveNoteManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(deleted_at__isnull=True)
+
+
 # Note model
 class Note(models.Model):
     id = models.AutoField(primary_key=True)
@@ -13,7 +22,16 @@ class Note(models.Model):
     is_pinned = models.BooleanField(default=False)
     is_archived = models.BooleanField(default=False)
     tags = models.ManyToManyField('Tag', blank=True)
-    
+    # Soft delete: when set, the note is in the Trash (not shown in normal views).
+    deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
+
+    objects = ActiveNoteManager()          # default: active notes only
+    all_objects = models.Manager()         # escape hatch: includes trashed
+
+    @property
+    def is_trashed(self):
+        return self.deleted_at is not None
+
     def __str__(self):
         return self.title
 

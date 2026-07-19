@@ -2,13 +2,14 @@
 {% block title %}Delete: {{ note.title }}{% endblock %}
 {% block content %}
 <div class="card auth-card">
-  <h1>Delete note</h1>
-  <p>Are you sure you want to delete “{{ note.title }}”?</p>
+  <h1>Move to Trash</h1>
+  <p>Move “{{ note.title }}” to the Trash? You can restore it later, or delete it
+     permanently from the <a href="{% url 'trash' %}">Trash</a>.</p>
 
   <form method="post">
     {% csrf_token %}
     <div class="form-actions">
-      <button class="button button--danger" type="submit">Yes, delete</button>
+      <button class="button button--danger" type="submit">Move to Trash</button>
       <a class="button" href="{% url 'note_detail' note.pk %}">Cancel</a>
     </div>
   </form>

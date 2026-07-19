@@ -87,6 +87,9 @@ ENV/
 .idea/
 *.code-workspace
 
+# Claude Code local config (launch.json, etc.)
+.claude/
+
 # OS-specific
 .DS_Store
 Thumbs.db

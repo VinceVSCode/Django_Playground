@@ -15,8 +15,16 @@ def _actor_for(instance):
     # Try to get the actor from the instance, else from middleware
     return getattr(instance, '_actor', None) or get_current_user()
 
+# Trash operations (soft-delete / restore / purge) set `_suppress_event` on the
+# instance so these signals stay quiet — the views log the correct event
+# explicitly, keeping analytics identical to the old hard-delete behavior.
+def _suppressed(instance):
+    return getattr(instance, '_suppress_event', False)
+
 @receiver(post_save, sender=Note)
 def log_note_save(sender, instance: Note, created,**kwargs):
+    if _suppressed(instance):
+        return
     actor =  _actor_for(instance)
     log.warning("post_save Note: created=%s, actor=%r, note_id=%s", created, getattr(actor,'username',None), instance.pk)
     if not actor:
@@ -26,12 +34,14 @@ def log_note_save(sender, instance: Note, created,**kwargs):
         log_note_event(actor, instance, NoteEvent.ACTION_CREATE)
     else:
         log_note_event(actor, instance, NoteEvent.ACTION_UPDATE)
-    
+
 @receiver(post_delete, sender=Note)
 def log_note_delete(sender, instance: Note, **kwargs):
+    if _suppressed(instance):
+        return
     actor =  _actor_for(instance)
     log.warning("post_delete Note: actor=%r, note_id=%s", getattr(actor,'username',None), instance.pk)
-    
+
     if not actor:
         return
     # note is gone, so pass None. Maybe we can store note data in NoteEvent in future.
