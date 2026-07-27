@@ -128,6 +128,26 @@ docker compose exec web python manage.py createsuperuser
 > Want the container and your local (non-Docker) runs to share one database file?
 > Swap the named volume for the bind-mount shown (commented) in `docker-compose.yml`.
 
+### Production-style image
+
+`docker-compose.prod.yml` / `Dockerfile.prod` build a separate image that runs
+gunicorn against `settings_prod` (`DEBUG=False`, HTTPS redirect + secure
+cookies, static files collected at build time and served by whitenoise —
+no separate web server needed):
+
+```bash
+docker compose -f docker-compose.prod.yml up --build   # app at http://localhost:8000
+```
+
+That compose file sets `DJANGO_SECURE_SSL_REDIRECT=false` so it's reachable
+over plain http on localhost. **A real deployment should drop that override**
+(or set it `true`) and put a TLS-terminating reverse proxy in front — with it
+left at the default `true`, `settings_prod` redirects every request to https
+and marks the session/CSRF cookies `Secure`, which only works once TLS is
+actually terminated somewhere in front of gunicorn. Also change
+`DJANGO_SECRET_KEY` and `DJANGO_ALLOWED_HOSTS` for anything beyond a local
+smoke test.
+
 ## 🎮 Usage
 
 ### Web Interface

@@ -1,0 +1,31 @@
+# Production-style image, run locally. Build & run:
+#   docker compose -f docker-compose.prod.yml up --build
+# Then open http://localhost:8000
+#
+# This runs gunicorn (not runserver) against settings_prod with collected,
+# whitenoise-served static files. DJANGO_SECURE_SSL_REDIRECT=false below is
+# ONLY for testing over plain http on localhost — a real deployment behind
+# TLS should drop that line (or set it to true) so the redirect + secure
+# cookies are enforced.
+#
+# Data persistence: same pattern as docker-compose.yml — the SQLite DB lives
+# on the named volume `dbdata_prod`, so it survives `down` (removed only by
+# `down -v`).
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    ports:
+      - "8000:8000"
+    environment:
+      DJANGO_SETTINGS_MODULE: DjangoPlayground.settings_prod
+      DB_NAME: /data/db.sqlite3
+      DJANGO_SECRET_KEY: change-me-for-a-real-deployment
+      DJANGO_ALLOWED_HOSTS: 127.0.0.1,localhost
+      DJANGO_SECURE_SSL_REDIRECT: "false"
+    volumes:
+      - dbdata_prod:/data
+
+volumes:
+  dbdata_prod:
