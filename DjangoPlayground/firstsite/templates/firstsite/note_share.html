@@ -1,0 +1,41 @@
+{% extends "firstsite/base.html" %}
+{% block title %}Share Note{% endblock %}
+{% block content %}
+<div class="card card--narrow card--center">
+  <h1>Share “{{ note.title }}”</h1>
+  <p class="muted small">The recipient sees this note live and read-only — no copy is made.</p>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-field">
+      <label for="id_recipient_username">Recipient username</label>
+      {{ form.recipient_username }}
+      {% for error in form.recipient_username.errors %}<p class="form-field__error">{{ error }}</p>{% endfor %}
+    </div>
+    {% for error in form.non_field_errors %}<p class="form-field__error">{{ error }}</p>{% endfor %}
+    <div class="form-actions">
+      <button class="button button--primary" type="submit">Share</button>
+      <a class="button" href="{% url 'note_detail' note.pk %}">Cancel</a>
+    </div>
+  </form>
+</div>
+
+{% if shares %}
+<div class="card section-gap">
+  <h2>Currently shared with</h2>
+  <ul class="item-list">
+    {% for share in shares %}
+      <li class="item-row">
+        <div class="item-row__main">{{ share.shared_with.username }}</div>
+        <span class="item-row__meta">{{ share.created_at|date:"Y-m-d H:i" }}</span>
+        <div class="item-row__actions">
+          <form method="post" action="{% url 'note_unshare' note.pk share.pk %}" class="inline">
+            {% csrf_token %}
+            <button class="button button--ghost" type="submit">Unshare</button>
+          </form>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+{% endblock %}

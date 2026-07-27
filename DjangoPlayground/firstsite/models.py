@@ -72,6 +72,24 @@ class NoteSend (models.Model):
     def __str__(self):
         return f"{self.sender} -> {self.recipient}: ({self.original_note_id})"
     
+# NoteShare Model
+class NoteShare(models.Model):
+    """
+    Grants a user read-only, live access to another user's note.
+    Unlike NoteSend (which copies the note), the recipient always sees
+    the current title/content of `note` — no copy is made.
+    """
+    note = models.ForeignKey(Note, on_delete=models.CASCADE, related_name='shares')
+    shared_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notes_shared_out')
+    shared_with = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notes_shared_in')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('note', 'shared_with')
+
+    def __str__(self):
+        return f"{self.note_id} shared with {self.shared_with}"
+
 # NoteEvent
 class NoteEvent(models.Model):
     """

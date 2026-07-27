@@ -15,6 +15,9 @@ urlpatterns = [
     path('notes/list/', v.note_lists_view, name='note_lists'), # Maps the URL /firstsite/notes/list/ to the note_lists_view.
     path('notes/<int:pk>/', v.note_detail_view, name='note_detail'), # Maps the URL /firstsite/notes/<int:pk>/ to the note_detail_view.
     path('notes/<int:pk>/send/', v.note_send_view, name='note_send'), # Send note to another user functionality
+    path('notes/<int:pk>/share/', v.note_share_view, name='note_share'), # Live read-only share management
+    path('notes/<int:pk>/share/<int:share_id>/unshare/', v.note_unshare_view, name='note_unshare'),
+    path('notes/<int:pk>/leave-share/', v.note_leave_share_view, name='note_leave_share'),
     path('notes/<int:pk>/edit/', v.note_update_view, name='note_edit'),
     path('notes/<int:pk>/delete/', v.note_delete_view, name='note_delete'),
     path('notes/<int:pk>/toggle-pin/', v.note_toggle_pin, name='note_toggle_pin'), # Toggle pin status of a note
@@ -25,6 +28,7 @@ urlpatterns = [
     # HTML inbox/sent
     path('inbox/', v.inbox_list_view, name='inbox'), # View for inbox
     path('sent/', v.sent_list_view, name='sent'), # View for sent notes
+    path('shared-with-me/', v.shared_with_me_view, name='shared_with_me'), # Live read-only shares received
 
     # Trash (soft delete)
     path('trash/', v.trash_list_view, name='trash'),

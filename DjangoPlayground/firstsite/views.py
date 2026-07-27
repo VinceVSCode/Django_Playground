@@ -12,8 +12,8 @@ from django.utils import timezone
 from django.db.models import Q, Count
 from django.db.models.functions import TruncDay, TruncWeek, TruncMonth, TruncYear
 from .utils import attach_actor, log_note_event
-from .models import Note, NoteVersion, Tag, NoteSend, NoteEvent
-from .forms import NoteForm, TagForm, SendNoteForm
+from .models import Note, NoteVersion, Tag, NoteSend, NoteEvent, NoteShare
+from .forms import NoteForm, TagForm, SendNoteForm, ShareNoteForm
 
 # HTML (server-rendered) views. DRF API views live in api.py.
 
@@ -170,9 +170,22 @@ def note_toggle_archive(request, pk):
 
 @login_required
 def note_detail_view(request, pk):
-    note = get_object_or_404(Note, pk=pk, owner=request.user)
-    versions = note.versions.order_by('-timestamp')  # related_name='versions' on NoteVersion
-    return render(request, 'firstsite/note_detail.html', {'note': note,'versions': versions})
+    # Owner OR a user the note has been shared with may view it.
+    note = get_object_or_404(
+        Note.objects.filter(Q(owner=request.user) | Q(shares__shared_with=request.user)).distinct(),
+        pk=pk,
+    )
+    is_owner = note.owner_id == request.user.id
+    versions = note.versions.order_by('-timestamp') if is_owner else NoteVersion.objects.none()
+    shares = note.shares.select_related('shared_with').order_by('shared_with__username') if is_owner else None
+    my_share = None if is_owner else note.shares.get(shared_with=request.user)
+    return render(request, 'firstsite/note_detail.html', {
+        'note': note,
+        'versions': versions,
+        'is_owner': is_owner,
+        'shares': shares,
+        'my_share': my_share,
+    })
 
 
 # API endpoint to create a new note
@@ -430,6 +443,61 @@ def note_send_view(request, pk):
     else:
         form = SendNoteForm()
     return render(request, "firstsite/note_send.html", {"form": form, "note": note})
+
+# Share functions (live, read-only sharing — see NoteShare)
+@login_required
+def note_share_view(request, pk):
+    """
+    Owner-only. GET: form + current share list. POST: grant a new share.
+    """
+    note = get_object_or_404(Note, pk=pk, owner=request.user)
+    shares = note.shares.select_related('shared_with').order_by('shared_with__username')
+    if request.method == "POST":
+        form = ShareNoteForm(request.POST, owner=request.user)
+        if form.is_valid():
+            recipient = form.cleaned_data['recipient_username']
+            _, created = NoteShare.objects.get_or_create(
+                note=note, shared_with=recipient, defaults={'shared_by': request.user}
+            )
+            if created:
+                messages.success(request, f"Note shared with {recipient.username}.")
+            else:
+                messages.info(request, f"Already shared with {recipient.username}.")
+            return redirect("note_share", pk=note.pk)
+    else:
+        form = ShareNoteForm(owner=request.user)
+    return render(request, "firstsite/note_share.html", {"form": form, "note": note, "shares": shares})
+
+@login_required
+@require_POST
+def note_unshare_view(request, pk, share_id):
+    """Owner revokes a share."""
+    note = get_object_or_404(Note, pk=pk, owner=request.user)
+    share = get_object_or_404(NoteShare, pk=share_id, note=note)
+    recipient_name = share.shared_with.username
+    share.delete()
+    messages.success(request, f"Stopped sharing with {recipient_name}.")
+    return redirect("note_share", pk=note.pk)
+
+@login_required
+@require_POST
+def note_leave_share_view(request, pk):
+    """Recipient removes a note from their own 'Shared with me' list."""
+    share = get_object_or_404(NoteShare, note_id=pk, shared_with=request.user)
+    share.delete()
+    messages.success(request, "Removed from your shared notes.")
+    return redirect("shared_with_me")
+
+@login_required
+def shared_with_me_view(request):
+    """List notes shared with the current user (read-only)."""
+    shares_qs = NoteShare.objects.filter(shared_with=request.user).select_related(
+        "note", "shared_by"
+    ).order_by("-created_at")
+    paginator = Paginator(shares_qs, 12)
+    page_number = request.GET.get("page") or 1
+    page_obj = paginator.get_page(page_number)
+    return render(request, "firstsite/shared_with_me.html", {"page_obj": page_obj})
 
 @login_required
 def inbox_list_view(request):

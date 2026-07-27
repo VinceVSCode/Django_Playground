@@ -58,3 +58,26 @@ class SendNoteForm(forms.Form):
             return User.objects.get(username=name)
         except User.DoesNotExist:
             raise forms.ValidationError("No such user.")
+
+# Form for sharing a note (live, read-only) with another user
+class ShareNoteForm(forms.Form):
+    recipient_username = forms.CharField(max_length=150, label="Share with (username)")
+
+    def __init__(self, *args, **kwargs):
+        self.owner = kwargs.pop('owner', None)
+        super().__init__(*args, **kwargs)
+
+    def clean_recipient_username(self):
+        name = (self.cleaned_data.get('recipient_username') or "")
+        name = str(name).strip()
+        if not name:
+            raise forms.ValidationError("Please enter a username.")
+
+        try:
+            user = User.objects.get(username=name)
+        except User.DoesNotExist:
+            raise forms.ValidationError("No such user.")
+
+        if self.owner is not None and user == self.owner:
+            raise forms.ValidationError("You can't share a note with yourself.")
+        return user
