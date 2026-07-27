@@ -20,7 +20,7 @@
 
     <div class="form-field">
       <label>Actions</label>
-      <div class="chips">
+      <div class="chips" id="actions">
         {% for a in all_actions %}
           <label class="chip">
             <input type="checkbox" name="actions" value="{{ a }}" {% if a in actions %}checked{% endif %}>
@@ -35,6 +35,31 @@
       <a class="button" href="{% url 'analytics' %}">Reset</a>
     </div>
   </form>
+</div>
+
+<div class="card">
+  <h2>{{ bucket|capfirst }} activity by action</h2>
+  <noscript><p class="muted">Enable JavaScript to see the chart — the table below shows the same data.</p></noscript>
+
+  <div class="chart-toolbar">
+    <div class="form-field">
+      <label for="fromDate">From</label>
+      <input type="date" id="fromDate">
+    </div>
+    <div class="form-field">
+      <label for="toDate">To</label>
+      <input type="date" id="toDate">
+    </div>
+    <button class="button button--ghost" id="clearRange" type="button">Clear range</button>
+  </div>
+
+  <div class="chart-wrap">
+    <!-- Filled by static/firstsite/analytics_chart.js -->
+    <svg id="chart" class="chart" viewBox="0 0 640 320" role="img"
+         aria-label="Stacked bar chart of note events per period, by action"></svg>
+  </div>
+  <div id="legend" class="legend"></div>
+  <p class="muted small">Date range filters the chart only, over the currently loaded bucket — not the table below.</p>
 </div>
 
 {% if not table_rows %}

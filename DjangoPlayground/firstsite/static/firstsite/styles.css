@@ -25,6 +25,15 @@
   --danger: #e2707a;
   --danger-soft: rgba(226,112,122,.12);
 
+  /* Per-action series colors for the analytics chart (P-019) only — scoped
+     exception to the 3-color rule, see FRONTEND_IDEAS.md Amendment 2026-07-20.
+     Create/Delete alias the existing accent/danger tokens; Update/Send are
+     the only genuinely new hues (muted teal, muted amber). */
+  --series-create: var(--accent);
+  --series-update: #5fb6a6;
+  --series-delete: var(--danger);
+  --series-send:   #d1a35a;
+
   --shadow: 0 8px 20px rgba(0,0,0,.25);
   --shadow-lift: 0 12px 26px rgba(0,0,0,.32);
 
@@ -48,6 +57,12 @@
 
   --danger: #c0313f;
   --danger-soft: rgba(192,49,63,.08);
+
+  /* --series-create / --series-delete alias --accent / --danger above, so
+     they re-resolve automatically under this theme; only the two literal
+     colors need redeclaring here (darker, for contrast on a light bg). */
+  --series-update: #2f8f7e;
+  --series-send:   #a67a35;
 
   --shadow: 0 8px 20px rgba(20,30,60,.07);
   --shadow-lift: 0 12px 26px rgba(20,30,60,.11);
@@ -496,3 +511,29 @@ input:focus-visible, textarea:focus-visible, select:focus-visible{
   padding: .25rem .5rem;
 }
 .markdown th{ background: var(--panel-strong); }
+
+/* ===== Analytics chart (P-019) =====
+   Drawn by static/firstsite/analytics_chart.js into the #chart <svg>.
+   Colors come from the --series-* tokens (see Amendment 2026-07-20). */
+.chart-toolbar{ display:flex; align-items:flex-end; gap:.6rem 1rem; flex-wrap:wrap; margin-bottom:.75rem; }
+.chart-toolbar .form-field{ margin-bottom:0; }
+.chart-wrap{ overflow-x:auto; }
+.chart{ display:block; width:100%; height:auto; min-width:480px; }
+.chart__grid{ stroke:var(--line); stroke-width:1; }
+.chart__axis-label{ fill:var(--muted); font-size:11px; }
+.chart__value{ fill:var(--text); font-size:11px; font-weight:600; text-anchor:middle; }
+.chart__empty{ fill:var(--muted); font-size:13px; text-anchor:middle; }
+.chart__seg{ cursor:pointer; }
+.chart__seg:hover{ filter:brightness(1.15); }
+.chart__seg--create{ fill:var(--series-create); }
+.chart__seg--update{ fill:var(--series-update); }
+.chart__seg--delete{ fill:var(--series-delete); }
+.chart__seg--send{ fill:var(--series-send); }
+
+.legend{ display:flex; gap:1rem; flex-wrap:wrap; margin-top:.75rem; font-size:.85rem; color:var(--text); }
+.legend__item{ display:inline-flex; align-items:center; gap:.4rem; }
+.legend__swatch{ width:10px; height:10px; border-radius:2px; display:inline-block; }
+.legend__swatch--create{ background:var(--series-create); }
+.legend__swatch--update{ background:var(--series-update); }
+.legend__swatch--delete{ background:var(--series-delete); }
+.legend__swatch--send{ background:var(--series-send); }
