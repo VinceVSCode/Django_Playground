@@ -7,8 +7,13 @@
     <h1>{{ note.title }}</h1>
     {% if note.is_pinned %}<span class="chip chip--status">Pinned</span>{% endif %}
     {% if note.is_archived %}<span class="chip chip--status">Archived</span>{% endif %}
+    {% if not is_owner %}<span class="chip chip--status">Read-only</span>{% endif %}
   </div>
-  <p class="muted small">Updated {{ note.updated_at|date:"Y-m-d H:i" }}</p>
+  {% if not is_owner %}
+    <p class="muted small">Shared by {{ note.owner.username }} · updated {{ note.updated_at|date:"Y-m-d H:i" }}</p>
+  {% else %}
+    <p class="muted small">Updated {{ note.updated_at|date:"Y-m-d H:i" }}</p>
+  {% endif %}
 
   <div class="markdown">{{ note.content|markdown }}</div>
 
@@ -21,13 +26,43 @@
   {% endif %}
 
   <div class="detail-actions">
-    <a class="button button--primary" href="{% url 'note_edit' note.pk %}">Edit</a>
-    <a class="button" href="{% url 'note_send' note.pk %}">Send</a>
-    <a class="button" href="{% url 'note_lists' %}">Back to list</a>
-    <a class="button button--danger" href="{% url 'note_delete' note.pk %}">Delete</a>
+    {% if is_owner %}
+      <a class="button button--primary" href="{% url 'note_edit' note.pk %}">Edit</a>
+      <a class="button" href="{% url 'note_send' note.pk %}">Send</a>
+      <a class="button" href="{% url 'note_share' note.pk %}">Share</a>
+      <a class="button" href="{% url 'note_lists' %}">Back to list</a>
+      <a class="button button--danger" href="{% url 'note_delete' note.pk %}">Delete</a>
+    {% else %}
+      <a class="button" href="{% url 'shared_with_me' %}">Back to shared notes</a>
+      <form method="post" action="{% url 'note_leave_share' note.pk %}" class="inline">
+        {% csrf_token %}
+        <button class="button button--ghost" type="submit">Remove from my shared notes</button>
+      </form>
+    {% endif %}
   </div>
 </article>
 
+{% if is_owner and shares %}
+<section class="card section-gap">
+  <h2>Shared with</h2>
+  <ul class="item-list">
+    {% for share in shares %}
+      <li class="item-row">
+        <div class="item-row__main">{{ share.shared_with.username }}</div>
+        <span class="item-row__meta">{{ share.created_at|date:"Y-m-d H:i" }}</span>
+        <div class="item-row__actions">
+          <form method="post" action="{% url 'note_unshare' note.pk share.pk %}" class="inline">
+            {% csrf_token %}
+            <button class="button button--ghost" type="submit">Unshare</button>
+          </form>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if is_owner %}
 <section class="card section-gap">
   <h2>History</h2>
   {% if versions %}
@@ -57,4 +92,5 @@
     <p class="muted">No history yet.</p>
   {% endif %}
 </section>
+{% endif %}
 {% endblock %}

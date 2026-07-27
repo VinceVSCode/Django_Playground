@@ -19,6 +19,7 @@
           <a href="{% url 'note_lists' %}" class="topbar__link{% if active == 'note_lists' or active == 'note_detail' %} topbar__link--active{% endif %}" {% if active == 'note_lists' %}aria-current="page"{% endif %}>Notes</a>
           <a href="{% url 'inbox' %}" class="topbar__link{% if active == 'inbox' %} topbar__link--active{% endif %}" {% if active == 'inbox' %}aria-current="page"{% endif %}>Inbox</a>
           <a href="{% url 'sent' %}" class="topbar__link{% if active == 'sent' %} topbar__link--active{% endif %}" {% if active == 'sent' %}aria-current="page"{% endif %}>Sent</a>
+          <a href="{% url 'shared_with_me' %}" class="topbar__link{% if active == 'shared_with_me' %} topbar__link--active{% endif %}" {% if active == 'shared_with_me' %}aria-current="page"{% endif %}>Shared</a>
           <a href="{% url 'tag_list' %}" class="topbar__link{% if active == 'tag_list' %} topbar__link--active{% endif %}" {% if active == 'tag_list' %}aria-current="page"{% endif %}>Tags</a>
           <a href="{% url 'analytics' %}" class="topbar__link{% if active == 'analytics' %} topbar__link--active{% endif %}" {% if active == 'analytics' %}aria-current="page"{% endif %}>Analytics</a>
           <a href="{% url 'trash' %}" class="topbar__link{% if active == 'trash' %} topbar__link--active{% endif %}" {% if active == 'trash' %}aria-current="page"{% endif %}>Trash</a>
