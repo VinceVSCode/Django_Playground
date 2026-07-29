@@ -1,0 +1,35 @@
+# Production image for Django Playground.
+# Runs gunicorn against settings_prod. Static files are collected at build
+# time and served by whitenoise (see settings_base.py) — no separate web
+# server/CDN needed for this playground's scale.
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    DJANGO_SETTINGS_MODULE=DjangoPlayground.settings_prod
+
+WORKDIR /app
+
+# Install dependencies first (better layer caching)
+COPY requirements.txt ./
+RUN pip install --upgrade pip && pip install -r requirements.txt
+
+# Copy the Django project
+COPY DjangoPlayground/ ./DjangoPlayground/
+COPY docker/entrypoint.prod.sh /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
+
+# Mount point for the persistent SQLite database (see DB_NAME in compose)
+RUN mkdir -p /data
+
+WORKDIR /app/DjangoPlayground
+
+# Collect static files at build time (needs a SECRET_KEY; settings_base's
+# dev-insecure-key default is fine here — collectstatic doesn't touch the DB
+# or serve requests, so it isn't a real secret in this step).
+RUN python manage.py collectstatic --noinput
+
+EXPOSE 8000
+
+ENTRYPOINT ["/entrypoint.sh"]
