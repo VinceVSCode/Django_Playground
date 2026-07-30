@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from .utils import attach_actor, log_note_event
+from .utils import attach_actor, log_note_event, copy_tags_for_recipient
 from .models import Note, NoteVersion, Tag, NoteSend, NoteEvent
 from .serializers import NoteSerializer, TagSerializer, NoteVersionSerializer
 
@@ -296,10 +296,10 @@ def api_note_send(request,pk):
         is_pinned = False,
         is_archived = False,
     )
-    attach_actor(copy, request.user)  
+    attach_actor(copy, request.user)
     copy.save()
-    # Copy tags if any
-    copy.tags.set(note.tags.all())
+    # Copy tags by name into the recipient's own tags (not the sender's Tag rows).
+    copy_tags_for_recipient(note, copy, recipient)
 
     # Log send action
     NoteSend.objects.create(original_note=note, sender=request.user, recipient=recipient)
