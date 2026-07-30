@@ -11,7 +11,7 @@ from django.utils.dateparse import parse_date
 from django.utils import timezone
 from django.db.models import Q, Count
 from django.db.models.functions import TruncDay, TruncWeek, TruncMonth, TruncYear
-from .utils import attach_actor, log_note_event
+from .utils import attach_actor, log_note_event, copy_tags_for_recipient
 from .models import Note, NoteVersion, Tag, NoteSend, NoteEvent, NoteShare
 from .forms import NoteForm, TagForm, SendNoteForm, ShareNoteForm
 
@@ -429,10 +429,10 @@ def note_send_view(request, pk):
                 is_pinned = False,
                 is_archived = False,
             )
-            # Copy tags if any
             attach_actor(copy, request.user)
             copy.save()
-            copy.tags.set(note.tags.all())
+            # Copy tags by name into the recipient's own tags (not the sender's Tag rows).
+            copy_tags_for_recipient(note, copy, recipient)
 
             # Log send action
             NoteSend.objects.create(original_note=note, sender=request.user, recipient=recipient)
