@@ -154,6 +154,11 @@ def note_toggle_pin(request, pk):
     note.is_pinned = not note.is_pinned
     attach_actor(note, request.user)
     note.save(update_fields=['is_pinned', 'updated_at'])
+    # P-024: an htmx request swaps just this card in place — the flip is
+    # already visible on the card itself, so skip the toast (it would only
+    # show up later, on whatever full page the user navigates to next).
+    if request.headers.get('HX-Request') == 'true':
+        return render(request, 'firstsite/note_card.html', {'note': note})
     messages.success(request, "Note pinned." if note.is_pinned else "Note unpinned.")
     return redirect(request.POST.get('next') or 'note_lists')
 
@@ -165,6 +170,8 @@ def note_toggle_archive(request, pk):
     note.is_archived = not note.is_archived
     attach_actor(note, request.user)
     note.save(update_fields=['is_archived', 'updated_at'])
+    if request.headers.get('HX-Request') == 'true':
+        return render(request, 'firstsite/note_card.html', {'note': note})
     messages.success(request, "Note archived." if note.is_archived else "Note restored.")
     return redirect(request.POST.get('next') or 'note_lists')
 

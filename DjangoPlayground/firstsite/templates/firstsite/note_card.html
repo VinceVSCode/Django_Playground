@@ -1,0 +1,53 @@
+<article class="note-card" id="note-card-{{ note.pk }}">
+  <div class="note-card__meta">
+    {% if note.is_pinned %}<span class="chip chip--status">Pinned</span>{% endif %}
+    {% if note.is_archived %}<span class="chip chip--status">Archived</span>{% endif %}
+    <span>Updated {{ note.updated_at|date:"Y-m-d H:i" }}</span>
+  </div>
+
+  <h3 class="note-card__title">
+    <a href="{% url 'note_detail' note.pk %}" class="note-card__title-link">{{ note.title }}</a>
+  </h3>
+
+  <div class="note-card__excerpt">{{ note.content|truncatechars:120 }}</div>
+
+  {% if note.tags.exists %}
+    <div class="chips">
+      {% for tag in note.tags.all %}
+        <span class="chip">{{ tag.name }}</span>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="note-card__actions">
+    <a class="button" href="{% url 'note_edit' note.pk %}">Edit</a>
+    <a class="button" href="{% url 'note_send' note.pk %}">Send</a>
+
+    <!-- Low-frequency actions live in a ⋯ menu (ui.js); without JS they render inline as before -->
+    <div class="card-menu">
+      <button class="button button--ghost card-menu__toggle" type="button"
+              aria-haspopup="true" aria-expanded="false" aria-label="More actions">⋯</button>
+      <div class="card-menu__list" role="menu">
+        <!-- P-024: hx-post swaps just this card in place (no full page reload); the
+             plain method="post"/action target is the no-JS fallback (still redirects). -->
+        <form action="{% url 'note_toggle_pin' note.pk %}" method="post" class="inline"
+              hx-post="{% url 'note_toggle_pin' note.pk %}"
+              hx-target="#note-card-{{ note.pk }}" hx-swap="outerHTML">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button class="button button--ghost" type="submit" role="menuitem">{% if note.is_pinned %}Unpin{% else %}Pin{% endif %}</button>
+        </form>
+
+        <form action="{% url 'note_toggle_archive' note.pk %}" method="post" class="inline"
+              hx-post="{% url 'note_toggle_archive' note.pk %}"
+              hx-target="#note-card-{{ note.pk }}" hx-swap="outerHTML">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button class="button button--ghost" type="submit" role="menuitem">{% if note.is_archived %}Restore{% else %}Archive{% endif %}</button>
+        </form>
+
+        <a class="button button--danger" href="{% url 'note_delete' note.pk %}" role="menuitem">Delete…</a>
+      </div>
+    </div>
+  </div>
+</article>
