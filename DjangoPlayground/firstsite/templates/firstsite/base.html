@@ -90,6 +90,10 @@
       }
     })();
   </script>
+  <!-- Vendored (not a CDN): htmx.org v2.0.4, static/firstsite/vendor/htmx.min.js.
+       P-024: powers the Pin/Archive toggle's no-full-reload swap; harmless on
+       pages with no hx-* attributes. Must load before ui.js (CSRF wiring). -->
+  <script src="{% static 'firstsite/vendor/htmx.min.js' %}" defer></script>
   <script src="{% static 'firstsite/ui.js' %}" defer></script>
   <script src="{% static 'firstsite/analytics_chart.js' %}" defer></script>
 </body>
