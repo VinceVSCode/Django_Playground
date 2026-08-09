@@ -2,26 +2,53 @@
 # Then open http://localhost:8000  (sign up a user via the UI, or:
 #   docker compose exec web python manage.py createsuperuser )
 #
-# Data persistence: the SQLite DB lives on the named volume `dbdata`, so it
-# survives `docker compose down` and later `up`. It is removed ONLY by
-# `docker compose down -v`.
+# P-025: this stack now runs PostgreSQL instead of SQLite. Only the *containers*
+# use Postgres — plain `manage.py runserver` / `pytest` on your host still fall
+# back to SQLite, because settings_base only reads DB_* from the environment and
+# those vars are set here (see DATABASES in settings_base.py).
+#
+# Data persistence: the Postgres data directory lives on the named volume
+# `pgdata`, so it survives `docker compose down` and a later `up`. It is
+# removed ONLY by `docker compose down -v`.
+#
+# Reach the database directly with:
+#   docker compose exec db psql -U playground -d playground
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: playground
+      POSTGRES_USER: playground
+      POSTGRES_PASSWORD: playground-dev-password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # The web container runs `migrate` the moment it starts, so it has to wait
+    # for Postgres to actually accept connections — not merely for the container
+    # to exist (see depends_on/condition on the web service).
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U playground -d playground"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
   web:
     build: .
     ports:
       - "8000:8000"
     environment:
       DJANGO_SETTINGS_MODULE: DjangoPlayground.settings_dev
-      # Store the SQLite file on the persistent volume (settings_base reads DB_NAME)
-      DB_NAME: /data/db.sqlite3
       DJANGO_SECRET_KEY: dev-insecure-key
       DJANGO_ALLOWED_HOSTS: 127.0.0.1,localhost
-    volumes:
-      - dbdata:/data
-      # --- Alternative: share ONE db file with your host instead of a named
-      # volume (bind-mount). Comment out the line above and uncomment below,
-      # and set DB_NAME to /app/DjangoPlayground/db.sqlite3:
-      # - ./DjangoPlayground:/app/DjangoPlayground
+      # settings_base reads every one of these from the environment.
+      DB_ENGINE: django.db.backends.postgresql
+      DB_NAME: playground
+      DB_USER: playground
+      DB_PASS: playground-dev-password
+      DB_HOST: db
+      DB_PORT: "5432"
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
-  dbdata:
+  pgdata:

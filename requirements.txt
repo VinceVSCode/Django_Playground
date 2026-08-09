@@ -10,6 +10,7 @@ Markdown==3.10.2
 nh3==0.3.6
 packaging==25.0
 pluggy==1.6.0
+psycopg[binary]==3.3.4
 Pygments==2.19.2
 pytest==8.4.2
 pytest-django==4.11.1
