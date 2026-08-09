@@ -19,7 +19,7 @@ This project is primarily a learning resource with no specific end goal. It's de
 - **Notes Management**: CRUD operations for personal notes
 - **Web Interface**: HTML templates for user interaction
 - **REST API**: RESTful endpoints for programmatic access
-- **Database Integration**: SQLite database with Django ORM
+- **Database Integration**: Django ORM — SQLite for local runs, PostgreSQL in the Docker stack
 
 ### Technical Highlights
 - Django 5.2.4 framework
@@ -109,15 +109,20 @@ Django_Playground/
 
 ## 🐳 Run with Docker
 
-A containerized dev setup is included (uses `settings_dev` and the Django dev server).
+A containerized dev setup is included (uses `settings_dev` and the Django dev server,
+with **PostgreSQL 16** as the database).
 
 ```bash
 docker compose up --build     # build + start; app at http://localhost:8000
 ```
 
-The SQLite database is stored on a named Docker volume (`dbdata`), so **your data
-persists across sessions**: `docker compose down` and a later `docker compose up`
-keep everything. Only `docker compose down -v` deletes the volume (and the data).
+The stack is two services: `web` (Django) and `db` (Postgres). The web container
+waits for a Postgres healthcheck before running `migrate`, so the first `up` on a
+fresh machine works without a retry.
+
+Postgres data lives on a named Docker volume (`pgdata`), so **your data persists
+across sessions**: `docker compose down` and a later `docker compose up` keep
+everything. Only `docker compose down -v` deletes the volume (and the data).
 
 Create an account through the sign-up page, or make a superuser:
 
@@ -125,8 +130,17 @@ Create an account through the sign-up page, or make a superuser:
 docker compose exec web python manage.py createsuperuser
 ```
 
-> Want the container and your local (non-Docker) runs to share one database file?
-> Swap the named volume for the bind-mount shown (commented) in `docker-compose.yml`.
+Reach the database directly with psql:
+
+```bash
+docker compose exec db psql -U playground -d playground
+```
+
+> **Only the containers use Postgres.** Running `manage.py runserver` or `pytest`
+> directly on your host still uses SQLite — `settings_base.py` reads `DB_*` from the
+> environment and falls back to SQLite, and those vars are only set in
+> `docker-compose.yml`. So you don't need a local Postgres install to work on the
+> project or run the tests.
 
 ### Production-style image
 
