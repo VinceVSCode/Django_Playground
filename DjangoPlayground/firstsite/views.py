@@ -1,6 +1,7 @@
 import difflib
 
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import QueryDict
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
@@ -53,15 +54,18 @@ def home(request):
         return redirect('note_lists')  # to your notes list
     return redirect('login')           # to /accounts/login/
 
-# View to list notes for the logged-in user. Render a template with the notes.
-@login_required
-def note_lists_view(request):
+# Builds the note-list context (filter + sort + paginate) from a querystring.
+# Split out of note_lists_view in P-026 so the htmx delete flow can re-render
+# the same results region under the caller's active filters, instead of
+# leaving a stale pager behind. `params` is a QueryDict (request.GET, or the
+# filters a card's delete form posted back).
+def _note_list_context(request, params):
     # Query params
-    tag_id = request.GET.get('tag')                 # e.g. ?tag=3
-    untagged = request.GET.get('untagged') == '1'   # e.g. ?untagged=1
-    search = request.GET.get('search')              # e.g. ?search=foo
-    pinned = request.GET.get('pinned')              # '1', '0', or None
-    archived = request.GET.get('archived')          # '1', '0', or None
+    tag_id = params.get('tag')                 # e.g. ?tag=3
+    untagged = params.get('untagged') == '1'   # e.g. ?untagged=1
+    search = params.get('search')              # e.g. ?search=foo
+    pinned = params.get('pinned')              # '1', '0', or None
+    archived = params.get('archived')          # '1', '0', or None
 
     # Base queryset: only current user's notes
     notes = Note.objects.filter(owner=request.user)
@@ -92,12 +96,12 @@ def note_lists_view(request):
 
     # ---- Date range filtering ----
     # Choose which field to filter: updated_at (default) or created_at
-    date_field = request.GET.get('date_field', 'updated')  # 'updated' | 'created'
+    date_field = params.get('date_field', 'updated')  # 'updated' | 'created'
     field_map = {'updated': 'updated_at', 'created': 'created_at'}
     target_field = field_map.get(date_field, 'updated_at')
 
-    from_str = request.GET.get('from')  # YYYY-MM-DD
-    to_str   = request.GET.get('to')    # YYYY-MM-DD
+    from_str = params.get('from')  # YYYY-MM-DD
+    to_str   = params.get('to')    # YYYY-MM-DD
 
     from_date = parse_date(from_str) if from_str else None
     to_date   = parse_date(to_str) if to_str else None
@@ -109,8 +113,8 @@ def note_lists_view(request):
 
 
     # ---- Sorting (defaults: updated description) ----
-    sort = request.GET.get('sort', 'updated')   # 'updated' | 'created' | 'title'
-    direction = request.GET.get('dir', 'desc')  # 'asc' | 'desc'
+    sort = params.get('sort', 'updated')   # 'updated' | 'created' | 'title'
+    direction = params.get('dir', 'desc')  # 'asc' | 'desc'
     field_map = {
         'updated': 'updated_at',
         'created': 'created_at',
@@ -124,26 +128,37 @@ def note_lists_view(request):
 
     # Paginate the notes shown, 8 per page.
     paginator = Paginator(notes, 8)
-    page_obj = paginator.get_page(request.GET.get('page'))
+    page_obj = paginator.get_page(params.get('page'))
 
     #Keep filters in pagination links
-    params = request.GET.copy()
-    params.pop('page', None)  # remove existing page parameter
-    querystring = params.urlencode() # for example tag=3&search=foo
-
-
-
+    kept = params.copy()
+    kept.pop('page', None)  # remove existing page parameter
+    querystring = kept.urlencode() # for example tag=3&search=foo
 
     # Order the tag dropdown alphabetically
     tags = Tag.objects.filter(owner=request.user).order_by('name')
 
-    ctx= {
+    return {
         'tags': tags,
-        'values': request.GET,
+        'values': params,
         'page_obj': page_obj,
         'querystring': querystring,
-        'notes':page_obj.object_list,  # the notes for the current page
+        'notes': page_obj.object_list,  # the notes for the current page
+        # Filters the card actions post back, so a delete can re-render this
+        # same filtered/paginated region (see note_card.html).
+        'filter_params': params.urlencode(),
     }
+
+
+# View to list notes for the logged-in user. Render a template with the notes.
+@login_required
+def note_lists_view(request):
+    ctx = _note_list_context(request, request.GET)
+    # P-026: paginating or applying filters via htmx only needs the results
+    # region back, not the whole page (the filter bar keeps its own state
+    # client-side). Plain requests still render the full template.
+    if request.headers.get('HX-Request') == 'true':
+        return render(request, 'firstsite/note_results.html', ctx)
     return render(request, 'firstsite/note_list.html', ctx)
 
 # Toggle pin status of a note
@@ -174,6 +189,15 @@ def note_toggle_archive(request, pk):
         return render(request, 'firstsite/note_card.html', {'note': note})
     messages.success(request, "Note archived." if note.is_archived else "Note restored.")
     return redirect(request.POST.get('next') or 'note_lists')
+
+# P-026: renders a single note card on its own. Used by htmx to restore a card
+# after cancelling the inline delete confirmation.
+@login_required
+def note_card_view(request, pk):
+    note = get_object_or_404(Note, pk=pk, owner=request.user)
+    return render(request, 'firstsite/note_card.html',
+                  {'note': note, 'filter_params': request.GET.urlencode()})
+
 
 @login_required
 def note_detail_view(request, pk):
@@ -254,6 +278,12 @@ def note_delete_view(request, pk):
     The row is kept (deleted_at is stamped); the Trash page can restore or purge it.
     """
     note = get_object_or_404(Note, pk=pk, owner=request.user)
+    is_htmx = request.headers.get('HX-Request') == 'true'
+    # P-026: the note card posts its active filters along so the results region
+    # can be rebuilt exactly as the user had it (right page, right pager).
+    filter_params = QueryDict(request.POST.get('filter_params') or
+                              request.GET.get('filter_params') or '')
+
     if request.method == "POST":
         note.deleted_at = timezone.now()
         # Log the 'delete' event ourselves (identical to the old hard-delete
@@ -261,8 +291,19 @@ def note_delete_view(request, pk):
         note._suppress_event = True
         note.save(update_fields=["deleted_at", "updated_at"])
         log_note_event(request.user, note, NoteEvent.ACTION_DELETE)
+        if is_htmx:
+            # Re-render the whole results region rather than just dropping the
+            # card: deleting changes the page contents *and* the page count, so
+            # a card-only swap would leave a stale pager behind.
+            return render(request, "firstsite/note_results.html",
+                          _note_list_context(request, filter_params))
         messages.success(request, "Note moved to Trash.")
         return redirect("note_lists")
+
+    if is_htmx:
+        # Inline confirm: swaps in place of the card, no page navigation.
+        return render(request, "firstsite/note_card_confirm_delete.html",
+                      {"note": note, "filter_params": filter_params.urlencode()})
     return render(request, "firstsite/confirm_delete.html", {"note": note})
 
 # Trash: list soft-deleted notes

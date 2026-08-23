@@ -46,7 +46,11 @@
           <button class="button button--ghost" type="submit" role="menuitem">{% if note.is_archived %}Restore{% else %}Archive{% endif %}</button>
         </form>
 
-        <a class="button button--danger" href="{% url 'note_delete' note.pk %}" role="menuitem">Delete…</a>
+        {# P-026: swaps this card into an inline confirm instead of navigating
+           to the confirm page; the plain href is the no-JS fallback. #}
+        <a class="button button--danger" href="{% url 'note_delete' note.pk %}" role="menuitem"
+           hx-get="{% url 'note_delete' note.pk %}?filter_params={{ filter_params|urlencode }}"
+           hx-target="#note-card-{{ note.pk }}" hx-swap="outerHTML">Delete…</a>
       </div>
     </div>
   </div>

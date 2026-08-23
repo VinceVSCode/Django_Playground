@@ -1,0 +1,32 @@
+{# P-026: inline delete confirmation. Swapped in place of a note card by htmx
+   (see the Delete link in note_card.html) so confirming never leaves the list.
+   Keeps the same #note-card-<pk> id and .note-card shape so the grid layout
+   doesn't shift while confirming. Without JS the Delete link is still a plain
+   link to the full confirm_delete.html page, and this template is never used. #}
+<article class="note-card" id="note-card-{{ note.pk }}">
+  <div class="note-card__meta">
+    <span class="chip chip--status">Confirm</span>
+  </div>
+
+  <h3 class="note-card__title">{{ note.title }}</h3>
+
+  <div class="note-card__excerpt">
+    Move this note to the Trash? You can restore it later from the
+    <a href="{% url 'trash' %}">Trash</a>.
+  </div>
+
+  <div class="note-card__actions">
+    <form action="{% url 'note_delete' note.pk %}" method="post" class="inline"
+          hx-post="{% url 'note_delete' note.pk %}"
+          hx-target="#note-results" hx-swap="outerHTML">
+      {% csrf_token %}
+      <input type="hidden" name="filter_params" value="{{ filter_params }}">
+      <button class="button button--danger" type="submit">Move to Trash</button>
+    </form>
+
+    {# Cancel re-fetches just this card, restoring the normal view. #}
+    <a class="button" href="{% url 'note_detail' note.pk %}"
+       hx-get="{% url 'note_card' note.pk %}?{{ filter_params }}"
+       hx-target="#note-card-{{ note.pk }}" hx-swap="outerHTML">Cancel</a>
+  </div>
+</article>
