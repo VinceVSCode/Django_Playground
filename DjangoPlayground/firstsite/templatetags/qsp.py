@@ -13,7 +13,11 @@ def qs_keep (context, **overrides):
 
     Note: Values of None remove that key.
     """
-    request =  context.get('requests')
+    # NOTE: this read said context.get('requests') (plural) from P-006 until
+    # P-026 — it never matched, so the tag silently returned '' and every pager
+    # link rendered as a bare "?" (page 1, filters dropped) on the notes list,
+    # inbox, sent and shared-with-me pages.
+    request =  context.get('request')
     if not request:
         return ''
     
