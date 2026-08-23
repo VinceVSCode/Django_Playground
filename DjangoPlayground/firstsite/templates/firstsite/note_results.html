@@ -1,0 +1,59 @@
+{% load qsp %}
+{# P-026: the swappable results region — notes grid + pager + empty state.
+   Rendered inline by note_list.html on a full page load, and returned on its
+   own by note_lists_view when htmx asks for it (HX-Request), so paginating or
+   applying filters replaces just this block. Keep the id and the outer div in
+   sync with the hx-target below. #}
+<div id="note-results">
+{% if page_obj.object_list %}
+  <div class="notes-grid">
+    {% for note in page_obj.object_list %}
+      {% include "firstsite/note_card.html" %}
+    {% endfor %}
+  </div>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+    {# hx-boost-style pagination: each link GETs the same URL it would have
+       navigated to, but swaps only #note-results. hx-push-url keeps the
+       address bar (and so back/forward + refresh + bookmarking) correct.
+       Without JS these are still plain links to a full page. #}
+    <nav class="pager" aria-label="Pagination"
+         hx-target="#note-results" hx-swap="outerHTML" hx-push-url="true">
+      {% if page_obj.has_previous %}
+        <a href="?{% qs_keep page=page_obj.previous_page_number %}"
+           hx-get="?{% qs_keep page=page_obj.previous_page_number %}"
+           aria-label="Previous page">«</a>
+      {% else %}
+        <span class="gap" aria-hidden="true">«</span>
+      {% endif %}
+
+      {% for num in page_obj.paginator.page_range %}
+        {% if num == 1 or num == page_obj.paginator.num_pages or num|add:'-1' == page_obj.number or num == page_obj.number or num|add:'1' == page_obj.number %}
+          {% if num == page_obj.number %}
+            <span class="current" aria-current="page">{{ num }}</span>
+          {% else %}
+            <a href="?{% qs_keep page=num %}" hx-get="?{% qs_keep page=num %}">{{ num }}</a>
+          {% endif %}
+        {% elif num == 2 and page_obj.number > 3 %}
+          <span class="gap">…</span>
+        {% elif num == page_obj.paginator.num_pages|add:'-1' and page_obj.number < page_obj.paginator.num_pages|add:'-2' %}
+          <span class="gap">…</span>
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+        <a href="?{% qs_keep page=page_obj.next_page_number %}"
+           hx-get="?{% qs_keep page=page_obj.next_page_number %}"
+           aria-label="Next page">»</a>
+      {% else %}
+        <span class="gap" aria-hidden="true">»</span>
+      {% endif %}
+    </nav>
+  {% endif %}
+{% else %}
+  <div class="card empty-state">
+    <p class="muted">No notes match your filters.</p>
+    <a class="button button--primary" href="{% url 'create_note' %}">Create your first note</a>
+  </div>
+{% endif %}
+</div>
